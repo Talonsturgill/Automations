@@ -1,6 +1,6 @@
 # Workflow 8 — Transform Labs Fractional CTO LinkedIn Engine
 
-> **File:** [`workflows/transform-labs-fractional-cto-linkedin.json`](../../workflows/transform-labs-fractional-cto-linkedin.json) *(JSON to be added)*
+> **File:** `workflows/transform-labs-fractional-cto-linkedin.json` *(JSON to be added)*
 > **Trigger:** Fridays at 8:45 AM weekly
 > **Per-run cost:** ~$0.40–$0.80 (depends on iterations through critique loop)
 
@@ -14,48 +14,48 @@ The defining engineering choice here is **outline-first writing**. Unlike W7 whi
 
 ```mermaid
 flowchart TB
-    subgraph trig[Trigger]
-        T[Fridays @ 8:45 AM]:::trigger
+    subgraph trig["Trigger"]
+        T["Fridays @ 8:45 AM"]:::trigger
     end
 
-    subgraph rss[RSS aggregation - 5 corporate sources]
-        R1[HBR Technology]:::data
-        R2[MIT Sloan Review]:::data
-        R3[McKinsey Insights]:::data
-        R4[Fortune Tech]:::data
-        R5[CIO.com]:::data
-        MERGE[Merge -> Top 25 by date]:::core
+    subgraph rss["RSS aggregation - 5 corporate sources"]
+        R1["HBR Technology"]:::data
+        R2["MIT Sloan Review"]:::data
+        R3["McKinsey Insights"]:::data
+        R4["Fortune Tech"]:::data
+        R5["CIO.com"]:::data
+        MERGE["Merge → Top 25 by date"]:::core
     end
 
-    subgraph pick[Selection + outline]
-        NSA[News Selector Agent<br/>Claude Sonnet 4.5<br/>fractional-CTO angle]:::ai
-        OA[Outline Agent<br/>Claude Sonnet 4.5<br/>20-field blueprint]:::ai
+    subgraph pick["Selection + outline"]
+        NSA["News Selector Agent<br/>Claude Sonnet 4.5<br/>fractional-CTO angle"]:::ai
+        OA["Outline Agent<br/>Claude Sonnet 4.5<br/>20-field blueprint"]:::ai
     end
 
-    subgraph wrt[Draft + render]
-        DA[Draft Agent<br/>Claude Sonnet 4.5<br/>1800-2500 chars]:::ai
-        BQU[Build Quote Card URL]:::core
-        SHOT[ScreenshotOne<br/>1080x1080 PNG]:::out
-        SBN[Set Blob Name]:::core
-        AZ[Azure Blob upload]:::data
-        IL[Initialize Loop]:::core
+    subgraph wrt["Draft + render"]
+        DA["Draft Agent<br/>Claude Sonnet 4.5<br/>1800-2500 chars"]:::ai
+        BQU["Build Quote Card URL"]:::core
+        SHOT["ScreenshotOne<br/>1080x1080 PNG"]:::out
+        SBN["Set Blob Name"]:::core
+        AZ["Azure Blob upload"]:::data
+        IL["Initialize Loop"]:::core
     end
 
-    subgraph loop[Critique-Edit loop]
-        CA[Critique Agent<br/>Claude Sonnet 4.5<br/>5-dim weighted scoring]:::ai
-        VC[Validate Critique<br/>fallback on empty]:::core
-        EA[Edit Agent<br/>Claude Sonnet 4.5<br/>surgical fixes]:::ai
-        QG{Quality Gate<br/>score >= 8 OR<br/>loop >= 5}:::core
-        PNL[Prepare Next Loop]:::core
+    subgraph loop["Critique-Edit loop"]
+        CA["Critique Agent<br/>Claude Sonnet 4.5<br/>5-dim weighted scoring"]:::ai
+        VC["Validate Critique<br/>fallback on empty"]:::core
+        EA["Edit Agent<br/>Claude Sonnet 4.5<br/>surgical fixes"]:::ai
+        QG{"Quality Gate<br/>score >= 8 OR<br/>loop >= 5"}:::core
+        PNL["Prepare Next Loop"]:::core
     end
 
-    subgraph pub[Publish]
-        PFO[Prepare Final Output]:::core
-        CHUNK[Chunk for Notion<br/>2000-char paragraph blocks]:::core
-        NOT[Notion Content HQ<br/>Linkedin - Insight<br/>Status=Not Published]:::data
-        APP[Append blocks via PATCH]:::core
-        BSB[Build Slack Blocks]:::core
-        SLK[Slack #marketing-linkedin-posts]:::out
+    subgraph pub["Publish"]
+        PFO["Prepare Final Output"]:::core
+        CHUNK["Chunk for Notion<br/>2000-char paragraph blocks"]:::core
+        NOT["Notion Content HQ<br/>Linkedin - Insight<br/>Status=Not Published"]:::data
+        APP["Append blocks via PATCH"]:::core
+        BSB["Build Slack Blocks"]:::core
+        SLK["Slack #marketing-linkedin-posts"]:::out
     end
 
     T --> R1 & R2 & R3 & R4 & R5 --> MERGE --> NSA --> OA --> DA --> BQU --> SHOT --> SBN --> AZ --> IL --> CA --> VC --> EA --> QG

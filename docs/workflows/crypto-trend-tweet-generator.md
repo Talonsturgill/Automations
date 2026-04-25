@@ -1,6 +1,6 @@
 # Workflow 2 — Crypto Trend Tweet Generator
 
-> **File:** [`workflows/crypto-trend-tweet-generator.json`](../../workflows/crypto-trend-tweet-generator.json)
+> **File:** `workflows/crypto-trend-tweet-generator.json`
 > **Cadence:** 2×/day at 07:04 and 21:03
 > **Per-run cost:** ~$0.06
 
@@ -12,24 +12,24 @@ Twice-daily reactive tweet generator for `@Drippy_io` and `@Droopyy_io` that fus
 
 ```mermaid
 flowchart LR
-    SCH[Schedule<br/>2x/day]:::trigger
-    CG1[CoinGecko<br/>/search/trending]:::data
-    CG2[CoinGecko<br/>top by volume]:::data
-    CG3[CoinGecko<br/>top 24h gainers]:::data
-    FMT[Format Market Data<br/>JS Code]:::glue
-    TA[Trend Analyzer<br/>gpt-5-mini + websearch]:::ai
-    PR[Prepare Tweet Request<br/>JS Code]:::glue
-    TG[Tweet Generator<br/>gpt-5-mini<br/>orchestrator]:::ai
-    RR[Response Router<br/>JS Code + regex fallback]:::glue
-    SW{Switch by personality}:::decision
-    DRP[X / @Drippy_io]:::out
-    DRY[X / @Droopyy_io]:::out
+    SCH["Schedule<br/>2x/day"]:::trigger
+    CG1["CoinGecko<br/>/search/trending"]:::data
+    CG2["CoinGecko<br/>top by volume"]:::data
+    CG3["CoinGecko<br/>top 24h gainers"]:::data
+    FMT["Format Market Data<br/>JS Code"]:::glue
+    TA["Trend Analyzer<br/>gpt-5-mini + websearch"]:::ai
+    PR["Prepare Tweet Request<br/>JS Code"]:::glue
+    TG["Tweet Generator<br/>gpt-5-mini<br/>orchestrator"]:::ai
+    RR["Response Router<br/>JS Code + regex fallback"]:::glue
+    SW{"Switch by personality"}:::decision
+    DRP["X / @Drippy_io"]:::out
+    DRY["X / @Droopyy_io"]:::out
 
-    subgraph tools[Sub-workflow tools]
-        TM[Trend Monitor]:::ai
-        CA[Crypto Analyst]:::ai
-        EA[Engagement Agent]:::ai
-        PA[Personality Agent]:::ai
+    subgraph tools["Sub-workflow tools"]
+        TM["Trend Monitor"]:::ai
+        CA["Crypto Analyst"]:::ai
+        EA["Engagement Agent"]:::ai
+        PA["Personality Agent"]:::ai
     end
 
     SCH --> CG1 & CG2 & CG3

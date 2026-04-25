@@ -1,6 +1,6 @@
 # Workflow 3 — News-to-X Distribution
 
-> **File:** [`workflows/news-to-twitter-distribution.json`](../../workflows/news-to-twitter-distribution.json)
+> **File:** `workflows/news-to-twitter-distribution.json`
 > **Cadence:** 3×/day at 07:58, 12:03, 18:02 (news-to-X) + per-persona evergreen schedules + Telegram briefing
 > **Per-run cost:** ~$0.01 per X post run; ~$0.02 per Telegram briefing
 
@@ -12,12 +12,12 @@ A multi-channel publishing canvas. The headline path is the news-to-X pipeline f
 
 ```mermaid
 flowchart LR
-    SCH[Schedule<br/>3x/day]:::trigger
-    FETCH[CryptoCompare News API<br/>HTTP GET]:::data
-    FMT[Extract & Format<br/>top 20 articles<br/>JS Code]:::glue
-    CC[Content Curator<br/>gpt-5-mini]:::ai
-    TW[Twitter Agent<br/>gpt-5-mini]:::ai
-    POST[X / @Microvest]:::out
+    SCH["Schedule<br/>3x/day"]:::trigger
+    FETCH["CryptoCompare News API<br/>HTTP GET"]:::data
+    FMT["Extract & Format<br/>top 20 articles<br/>JS Code"]:::glue
+    CC["Content Curator<br/>gpt-5-mini"]:::ai
+    TW["Twitter Agent<br/>gpt-5-mini"]:::ai
+    POST["X / @Microvest"]:::out
 
     SCH --> FETCH --> FMT --> CC --> TW --> POST
 

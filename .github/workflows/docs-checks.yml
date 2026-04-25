@@ -1,0 +1,38 @@
+name: Docs checks
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "scripts/check_mermaid.py"
+      - ".github/workflows/docs-checks.yml"
+      - ".github/markdown-link-check.json"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - "scripts/check_mermaid.py"
+      - ".github/workflows/docs-checks.yml"
+      - ".github/markdown-link-check.json"
+
+jobs:
+  link-check:
+    name: Markdown link check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+          config-file: .github/markdown-link-check.json
+
+  mermaid-check:
+    name: Mermaid syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate Mermaid node-label patterns
+        run: python3 scripts/check_mermaid.py

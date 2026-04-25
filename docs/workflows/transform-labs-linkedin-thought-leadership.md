@@ -1,6 +1,6 @@
 # Workflow 7 — Transform Labs LinkedIn Thought Leadership Engine
 
-> **File:** [`workflows/transform-labs-linkedin-thought-leadership.json`](../../workflows/transform-labs-linkedin-thought-leadership.json) *(JSON to be added)*
+> **File:** `workflows/transform-labs-linkedin-thought-leadership.json` *(JSON to be added)*
 > **Trigger:** Thursdays at 8:45 AM weekly (manual `/thought` Slack command planned but not yet wired)
 > **Per-run cost:** ~$0.30–$0.60 (depends on iterations through critic loop)
 
@@ -14,47 +14,47 @@ The defining engineering choice here is **voice impersonation as a first-class q
 
 ```mermaid
 flowchart TB
-    subgraph trig[Trigger]
-        T[Thursdays @ 8:45 AM]:::trigger
-        TM[Manual /thought<br/>Slack command<br/>planned]:::trigger
+    subgraph trig["Trigger"]
+        T["Thursdays @ 8:45 AM"]:::trigger
+        TM["Manual /thought<br/>Slack command<br/>planned"]:::trigger
     end
 
-    subgraph gen[Insight generation]
-        IG[Insight Generator<br/>Gemini 3.1 Pro<br/>+ SerpAPI tool]:::ai
-        FMT[Format Scheduled Output]:::core
-        MRG[Merge Triggers]:::core
+    subgraph gen["Insight generation"]
+        IG["Insight Generator<br/>Gemini 3.1 Pro<br/>+ SerpAPI tool"]:::ai
+        FMT["Format Scheduled Output"]:::core
+        MRG["Merge Triggers"]:::core
     end
 
-    subgraph rsch[Research]
-        RA[Research Agent<br/>Gemini 3 Pro<br/>+ SerpAPI tool<br/>2-3 searches max]:::ai
-        PFW[Prepare for Writing]:::core
+    subgraph rsch["Research"]
+        RA["Research Agent<br/>Gemini 3 Pro<br/>+ SerpAPI tool<br/>2-3 searches max"]:::ai
+        PFW["Prepare for Writing"]:::core
     end
 
-    subgraph wrt[Write]
-        WA[Writer Agent<br/>Claude Sonnet 4.5<br/>500-1000 chars]:::ai
-        ILS[Initialize Loop State]:::core
+    subgraph wrt["Write"]
+        WA["Writer Agent<br/>Claude Sonnet 4.5<br/>500-1000 chars"]:::ai
+        ILS["Initialize Loop State"]:::core
     end
 
-    subgraph loop[Critic-Reviser loop]
-        CA[Critic Agent<br/>Claude Sonnet 4.5<br/>5-dim weighted scoring]:::ai
-        VCO[Validate Critic Output<br/>auto-pass on empty]:::core
-        EA[Editor Agent<br/>Claude Sonnet 4.5<br/>surgical edits only]:::ai
-        QG{Quality Gate<br/>score >= 8.9?}:::core
-        MIC{Max Iterations?<br/>loop >= 5}:::core
-        ULS[Update Loop State]:::core
+    subgraph loop["Critic-Reviser loop"]
+        CA["Critic Agent<br/>Claude Sonnet 4.5<br/>5-dim weighted scoring"]:::ai
+        VCO["Validate Critic Output<br/>auto-pass on empty"]:::core
+        EA["Editor Agent<br/>Claude Sonnet 4.5<br/>surgical edits only"]:::ai
+        QG{"Quality Gate<br/>score >= 8.9?"}:::core
+        MIC{"Max Iterations?<br/>loop >= 5"}:::core
+        ULS["Update Loop State"]:::core
     end
 
-    subgraph pub[Publish]
-        PFO[Prepare Final Output]:::core
-        HS[Hashtag Specialist<br/>Azure GPT-5 Mini]:::ai
-        BQU[Build Quote Card URL]:::core
-        SHOT[ScreenshotOne API<br/>1080x1080 PNG]:::out
-        BLOB[Azure Blob upload]:::data
-        NOT[Notion Content HQ<br/>LinkedIn - Thought Leadership<br/>Status=Not Published]:::data
-        BSB[Build Slack Blocks]:::core
-        SLK[Slack #marketing-linkedin-posts]:::out
-        DM{Was Manual?}:::core
-        DMU[DM submitter]:::out
+    subgraph pub["Publish"]
+        PFO["Prepare Final Output"]:::core
+        HS["Hashtag Specialist<br/>Azure GPT-5 Mini"]:::ai
+        BQU["Build Quote Card URL"]:::core
+        SHOT["ScreenshotOne API<br/>1080x1080 PNG"]:::out
+        BLOB["Azure Blob upload"]:::data
+        NOT["Notion Content HQ<br/>LinkedIn - Thought Leadership<br/>Status=Not Published"]:::data
+        BSB["Build Slack Blocks"]:::core
+        SLK["Slack #marketing-linkedin-posts"]:::out
+        DM{"Was Manual?"}:::core
+        DMU["DM submitter"]:::out
     end
 
     T --> IG --> FMT --> MRG
@@ -66,7 +66,7 @@ flowchart TB
     MIC -- no --> ULS --> CA
     PFO --> HS --> BQU --> SHOT --> BLOB --> NOT --> BSB --> SLK --> DM
     DM -- manual --> DMU
-    DM -- scheduled --> X[No-Op]:::core
+    DM -- scheduled --> X["No-Op"]:::core
 
     classDef trigger fill:#1f2937,color:#fff,stroke:#0ea5e9
     classDef core fill:#7c2d12,color:#fff,stroke:#fb923c

@@ -1,6 +1,6 @@
 # Workflow 1 — Microvest Content Engine
 
-> **File:** [`workflows/microvest-content-engine.json`](../../workflows/microvest-content-engine.json)
+> **File:** `workflows/microvest-content-engine.json`
 > **Cadence:** ~5×/week (Tue+Sat at 08:51, weekly at 15:14, Thu at 07:50)
 > **Per-run cost:** ~$0.25 (mostly the image)
 
@@ -20,20 +20,20 @@ End-to-end news-driven publishing across four social accounts from a single trig
 
 ```mermaid
 flowchart LR
-    ST[Schedule Trigger]:::trigger
-    WS[Web Search Topics<br/>gpt-5-mini + webSearch]:::ai
-    NC[News Curator<br/>gpt-5-mini]:::ai
-    CG[Content Generator<br/>gpt-5.1]:::ai
-    IMG[Image Gen<br/>gpt-image-1]:::ai
-    HT[Hashtag/SEO<br/>gpt-5-mini]:::ai
-    MERGE{Merge<br/>combineByPosition}:::merge
-    LI[LinkedIn Post<br/>org 78748279]:::out
-    MV[Make Tweet MV<br/>gpt-5-mini]:::ai
-    DR[Drippy Tweet<br/>gpt-5-mini]:::ai
-    DY[Droopy Tweet<br/>gpt-5-mini]:::ai
-    TM[X / @Microvest]:::out
-    TD[X / @Drippy_io]:::out
-    TY[X / @Droopyy_io]:::out
+    ST["Schedule Trigger"]:::trigger
+    WS["Web Search Topics<br/>gpt-5-mini + webSearch"]:::ai
+    NC["News Curator<br/>gpt-5-mini"]:::ai
+    CG["Content Generator<br/>gpt-5.1"]:::ai
+    IMG["Image Gen<br/>gpt-image-1"]:::ai
+    HT["Hashtag/SEO<br/>gpt-5-mini"]:::ai
+    MERGE{"Merge<br/>combineByPosition"}:::merge
+    LI["LinkedIn Post<br/>org 78748279"]:::out
+    MV["Make Tweet MV<br/>gpt-5-mini"]:::ai
+    DR["Drippy Tweet<br/>gpt-5-mini"]:::ai
+    DY["Droopy Tweet<br/>gpt-5-mini"]:::ai
+    TM["X / @Microvest"]:::out
+    TD["X / @Drippy_io"]:::out
+    TY["X / @Droopyy_io"]:::out
 
     ST --> WS --> NC
     NC --> CG --> IMG

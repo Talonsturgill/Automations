@@ -1,6 +1,6 @@
 # Workflow 9 — Transform Labs AI Transformation Carousel Engine
 
-> **File:** [`workflows/transform-labs-ai-transformation-carousel.json`](../../workflows/transform-labs-ai-transformation-carousel.json) *(JSON to be added)*
+> **File:** `workflows/transform-labs-ai-transformation-carousel.json` *(JSON to be added)*
 > **Trigger:** Wednesdays at 8:45 AM weekly
 > **Per-run cost:** ~$0.30–$0.70 (depends on critic-editor iterations)
 

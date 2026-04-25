@@ -1,6 +1,6 @@
 # Workflow 4 — Autonomous AI Agent System
 
-> **File:** [`workflows/autonomous-ai-agent-system.json`](../../workflows/autonomous-ai-agent-system.json)
+> **File:** `workflows/autonomous-ai-agent-system.json`
 > **Triggers:** Chat (interactive), 20-min mention scan, scheduled tweet runs, vector memory backfill
 > **Per-run cost:** ~$0.20 (master coordinator + sub-tools + 1 embedding)
 
@@ -12,49 +12,49 @@ The centerpiece of the system. An autonomous multi-agent runtime that operates `
 
 ```mermaid
 flowchart TB
-    subgraph entry[Entry points]
-        CHAT[Chat trigger]:::trigger
-        MENTSCH[Mention poll<br/>20 min]:::trigger
-        SCHED[Schedule trigger]:::trigger
+    subgraph entry["Entry points"]
+        CHAT["Chat trigger"]:::trigger
+        MENTSCH["Mention poll<br/>20 min"]:::trigger
+        SCHED["Schedule trigger"]:::trigger
     end
 
-    SI[State Initializer<br/>Big-Five + emotion +<br/>multi-tier memory]:::core
+    SI["State Initializer<br/>Big-Five + emotion +<br/>multi-tier memory"]:::core
 
-    subgraph analyze[Parallel analyzers]
-        BA[Behavior Analyzer<br/>time-of-day energy<br/>day-of-week specials]:::ai
-        MA[Market Analyzer<br/>session triggers<br/>major events]:::ai
-        SA[Social Dynamics<br/>4-node influence graph<br/>viral opp detection]:::ai
+    subgraph analyze["Parallel analyzers"]
+        BA["Behavior Analyzer<br/>time-of-day energy<br/>day-of-week specials"]:::ai
+        MA["Market Analyzer<br/>session triggers<br/>major events"]:::ai
+        SA["Social Dynamics<br/>4-node influence graph<br/>viral opp detection"]:::ai
     end
 
-    DE[Decision Engine<br/>score = priority×10<br/>+ humanLike×30 + timing<br/>+ random]:::core
+    DE["Decision Engine<br/>score = priority×10<br/>+ humanLike×30 + timing<br/>+ random"]:::core
 
-    HIL[Human Imperfection Layer<br/>typing speed, typos,<br/>ellipsis style, edit chance]:::core
+    HIL["Human Imperfection Layer<br/>typing speed, typos,<br/>ellipsis style, edit chance"]:::core
 
-    subgraph mem[Memory retrieval]
-        EMB[OpenAI embedding<br/>text-embedding-3-small]:::data
-        SIM[Search Similar<br/>match_conversation_memory<br/>top 10]:::data
-        CTX[Context Formatter<br/>most-frequent agent combos<br/>from past success]:::core
+    subgraph mem["Memory retrieval"]
+        EMB["OpenAI embedding<br/>text-embedding-3-small"]:::data
+        SIM["Search Similar<br/>match_conversation_memory<br/>top 10"]:::data
+        CTX["Context Formatter<br/>most-frequent agent combos<br/>from past success"]:::core
     end
 
-    MC[Master Coordinator<br/>gpt-5.1<br/>+ 8 sub-workflow tools]:::ai
+    MC["Master Coordinator<br/>gpt-5.1<br/>+ 8 sub-workflow tools"]:::ai
 
-    subgraph tools[Sub-workflow tools]
-        T1[Engagement]:::ai
-        T2[Trend Monitor]:::ai
-        T3[Customer Support]:::ai
-        T4[Data Analyst]:::ai
-        T5[Community Builder]:::ai
-        T6[Banter Coordinator]:::ai
-        T7[Personality]:::ai
-        T8[Performance Analysis]:::ai
+    subgraph tools["Sub-workflow tools"]
+        T1["Engagement"]:::ai
+        T2["Trend Monitor"]:::ai
+        T3["Customer Support"]:::ai
+        T4["Data Analyst"]:::ai
+        T5["Community Builder"]:::ai
+        T6["Banter Coordinator"]:::ai
+        T7["Personality"]:::ai
+        T8["Performance Analysis"]:::ai
     end
 
-    RR[Response Router<br/>JSON parse → regex →<br/>canned fallback]:::core
+    RR["Response Router<br/>JSON parse → regex →<br/>canned fallback"]:::core
 
-    subgraph out[Output]
-        DRP[X / @Drippy_io]:::out
-        DRY[X / @Droopyy_io]:::out
-        WB[Embed + write to<br/>conversation_memory]:::data
+    subgraph out["Output"]
+        DRP["X / @Drippy_io"]:::out
+        DRY["X / @Droopyy_io"]:::out
+        WB["Embed + write to<br/>conversation_memory"]:::data
     end
 
     CHAT --> SI
