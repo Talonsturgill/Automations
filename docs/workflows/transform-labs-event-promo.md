@@ -1,6 +1,6 @@
 # Workflow 5 — Transform Labs Event Promo
 
-> **File:** [`workflows/transform-labs-event-promo.json`](../../workflows/transform-labs-event-promo.json) *(JSON to be added)*
+> **File:** `workflows/transform-labs-event-promo.json` *(JSON to be added)*
 > **Triggers:** RSS poll (30 min), Slack `/promo` webhook, daily 9:02 AM publish, eval dataset, manual
 > **Per-run cost:** ~$0.03 per event extracted + ~$0.05 per email generated
 
@@ -14,63 +14,63 @@ This is the most operationally complete workflow in the repo: it spans content d
 
 ```mermaid
 flowchart LR
-    subgraph entry[Entry points]
-        RSS[RSS Feed<br/>Columbus AI Meetup<br/>30 min poll]:::trigger
-        WH[Webhook<br/>/promo Slack cmd]:::trigger
-        EVAL[Eval dataset trigger]:::trigger
-        MAN[Manual trigger]:::trigger
-        SCH[Schedule<br/>9:02 AM daily]:::trigger
+    subgraph entry["Entry points"]
+        RSS["RSS Feed<br/>Columbus AI Meetup<br/>30 min poll"]:::trigger
+        WH["Webhook<br/>/promo Slack cmd"]:::trigger
+        EVAL["Eval dataset trigger"]:::trigger
+        MAN["Manual trigger"]:::trigger
+        SCH["Schedule<br/>9:02 AM daily"]:::trigger
     end
 
-    subgraph extract[Event extraction]
-        DD[De-Duplicate<br/>by title]:::core
-        EX[Extract Event Intel<br/>Azure gpt-5-mini<br/>+ HTTP crawl tool<br/>+ structured parser]:::ai
+    subgraph extract["Event extraction"]
+        DD["De-Duplicate<br/>by title"]:::core
+        EX["Extract Event Intel<br/>Azure gpt-5-mini<br/>+ HTTP crawl tool<br/>+ structured parser"]:::ai
     end
 
-    subgraph generate[Email generation]
-        ES[Email Strategist<br/>Anthropic Claude<br/>Sonnet 4.5]:::ai
-        WT[Writer Team<br/>sub-workflow tool]:::ai
-        TH[Think tool]:::ai
-        OP[Structured Output<br/>Parser w/ autoFix]:::core
+    subgraph generate["Email generation"]
+        ES["Email Strategist<br/>Anthropic Claude<br/>Sonnet 4.5"]:::ai
+        WT["Writer Team<br/>sub-workflow tool"]:::ai
+        TH["Think tool"]:::ai
+        OP["Structured Output<br/>Parser w/ autoFix"]:::core
     end
 
-    subgraph evals[Evaluation path]
-        EVCHK[Evaluation1<br/>checkIfEvaluating]:::core
-        METRICS[Calculate Reliability<br/>Metrics — 11 gates]:::core
-        EVOUT[Evaluation<br/>setMetrics]:::core
+    subgraph evals["Evaluation path"]
+        EVCHK["Evaluation1<br/>checkIfEvaluating"]:::core
+        METRICS["Calculate Reliability<br/>Metrics — 11 gates"]:::core
+        EVOUT["Evaluation<br/>setMetrics"]:::core
     end
 
-    subgraph assets[Asset handling]
-        LOOKUP[Notion: Lookup<br/>Event in Events DB]:::data
-        IF1{Has Event<br/>Image?}:::core
-        DL[Download Event Image]:::core
-        BLOB[Azure Blob Storage<br/>blogheaderimages]:::data
-        ASSEMBLE[Assemble Data<br/>with/without image]:::core
-        MERGE[Merge Image Paths]:::core
+    subgraph assets["Asset handling"]
+        LOOKUP["Notion: Lookup<br/>Event in Events DB"]:::data
+        IF1{"Has Event<br/>Image?"}:::core
+        DL["Download Event Image"]:::core
+        BLOB["Azure Blob Storage<br/>blogheaderimages"]:::data
+        ASSEMBLE["Assemble Data<br/>with/without image"]:::core
+        MERGE["Merge Image Paths"]:::core
     end
 
-    subgraph cms[CMS + approval]
-        IF2{Event Found<br/>in DB?}:::core
-        HQ[Notion: Create<br/>Content HQ entry<br/>Status=Not Published]:::data
-        IF3{Webhook<br/>triggered?}:::core
-        SLACK1[Slack: Notify<br/>Submitter DM]:::out
-        SLACK2[Slack: Notify<br/>#marketing-emails]:::out
+    subgraph cms["CMS + approval"]
+        IF2{"Event Found<br/>in DB?"}:::core
+        HQ["Notion: Create<br/>Content HQ entry<br/>Status=Not Published"]:::data
+        IF3{"Webhook<br/>triggered?"}:::core
+        SLACK1["Slack: Notify<br/>Submitter DM"]:::out
+        SLACK2["Slack: Notify<br/>#marketing-emails"]:::out
     end
 
-    subgraph publish[Daily publishing]
-        PULL[Notion: Get Approved<br/>Approved=true,<br/>Date<=now]:::data
-        BUILD[Build Email HTML<br/>Transform Labs<br/>branded template]:::core
-        ESC[Escape HTML for JSON]:::core
-        CC1[Constant Contact<br/>Create Campaign]:::out
-        CC2[Add List to Campaign]:::out
-        CC3[Schedule Immediate Send]:::out
-        MARK[Notion: Mark Published]:::data
-        NOTIFY[Slack: ops notification]:::out
+    subgraph publish["Daily publishing"]
+        PULL["Notion: Get Approved<br/>Approved=true,<br/>Date<=now"]:::data
+        BUILD["Build Email HTML<br/>Transform Labs<br/>branded template"]:::core
+        ESC["Escape HTML for JSON"]:::core
+        CC1["Constant Contact<br/>Create Campaign"]:::out
+        CC2["Add List to Campaign"]:::out
+        CC3["Schedule Immediate Send"]:::out
+        MARK["Notion: Mark Published"]:::data
+        NOTIFY["Slack: ops notification"]:::out
     end
 
-    subgraph err[Error path]
-        EH[Error Handler]:::core
-        ERRMSG[Slack: #n8n-workflow-error]:::out
+    subgraph err["Error path"]
+        EH["Error Handler"]:::core
+        ERRMSG["Slack: #n8n-workflow-error"]:::out
     end
 
     RSS --> DD --> EX

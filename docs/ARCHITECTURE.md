@@ -6,65 +6,65 @@ The four workflows in this repo share state, share personalities, and share a co
 
 ```mermaid
 flowchart TB
-    subgraph triggers[Trigger surface]
-        T1[Schedule<br/>~5x/wk]
-        T2[Schedule<br/>2x/day]
-        T3[Schedule<br/>3x/day]
-        T4M[Mention poll<br/>20 min - disabled]
-        T4C[Chat trigger<br/>active]
+    subgraph triggers["Trigger surface"]
+        T1["Schedule<br/>~5x/wk"]
+        T2["Schedule<br/>2x/day"]
+        T3["Schedule<br/>3x/day"]
+        T4M["Mention poll<br/>20 min - disabled"]
+        T4C["Chat trigger<br/>active"]
     end
 
-    subgraph data[Data sources]
-        SRCH[OpenAI web search]
-        CG[CoinGecko<br/>3 endpoints]
-        CC[CryptoCompare<br/>news API]
-        TWAPI[Twitter API v2<br/>mentions search]
+    subgraph data["Data sources"]
+        SRCH["OpenAI web search"]
+        CG["CoinGecko<br/>3 endpoints"]
+        CC["CryptoCompare<br/>news API"]
+        TWAPI["Twitter API v2<br/>mentions search"]
     end
 
-    subgraph w1[Workflow 1 — Microvest Content Engine]
+    subgraph w1["Workflow 1 — Microvest Content Engine"]
         direction TB
-        W1A[Topic & news agents]
-        W1B[Content + image gen]
-        W1C[3-way tweet fan-out]
+        W1A["Topic & news agents"]
+        W1B["Content + image gen"]
+        W1C["3-way tweet fan-out"]
         W1A --> W1B --> W1C
     end
 
-    subgraph w2[Workflow 2 — Crypto Trend Tweet Generator]
+    subgraph w2["Workflow 2 — Crypto Trend Tweet Generator"]
         direction TB
-        W2A[Trend analyzer]
-        W2B[Master tweet agent<br/>4 sub-workflow tools]
-        W2C[Response router<br/>+ regex fallback]
+        W2A["Trend analyzer"]
+        W2B["Master tweet agent<br/>4 sub-workflow tools"]
+        W2C["Response router<br/>+ regex fallback"]
         W2A --> W2B --> W2C
     end
 
-    subgraph w3[Workflow 3 — News-to-X Distribution]
+    subgraph w3["Workflow 3 — News-to-X Distribution"]
         direction TB
-        W3A[Content curator]
-        W3B[Twitter writer]
+        W3A["Content curator"]
+        W3B["Twitter writer"]
         W3A --> W3B
     end
 
-    subgraph w4[Workflow 4 — Autonomous AI Agent System]
+    subgraph w4["Workflow 4 — Autonomous AI Agent System"]
         direction TB
-        W4S[State initializer +<br/>3 parallel analyzers]
-        W4D[Decision engine +<br/>human imperfection layer]
-        W4M[Vector memory retrieval]
-        W4C[Master coordinator<br/>8 sub-workflow tools]
-        W4R[Response router<br/>+ canned fallback]
+        W4S["State initializer +<br/>3 parallel analyzers"]
+        W4D["Decision engine +<br/>human imperfection layer"]
+        W4M["Vector memory retrieval"]
+        W4C["Master coordinator<br/>8 sub-workflow tools"]
+        W4R["Response router<br/>+ canned fallback"]
         W4S --> W4D --> W4M --> W4C --> W4R
     end
 
-    subgraph mem[Persistent state]
-        PG[(Supabase pgvector<br/>conversation_memory)]
-        RD[(Redis<br/>processed_tweet:*)]
+    subgraph mem["Persistent state"]
+        PG[("Supabase pgvector<br/>conversation_memory")]
+        RD[("Redis<br/>processed_tweet:*")]
     end
 
-    subgraph out[Output surface]
-        LI[LinkedIn — /Microvest org]
-        TM[X — @Microvest]
-        TD[X — @Drippy_io]
-        TY[X — @Droopyy_io]
-        TG[Telegram channel<br/>planned, dead path]
+    subgraph out["Output surface"]
+        LI["LinkedIn — /Microvest org"]
+        TM["X — @Microvest"]
+        TD["X — @Drippy_io"]
+        TY["X — @Droopyy_io"]
+        TG["Telegram channel<br/>planned, dead path"]
     end
 
     T1 --> SRCH --> w1 --> LI & TM & TD & TY

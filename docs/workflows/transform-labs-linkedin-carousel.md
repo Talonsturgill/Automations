@@ -1,6 +1,6 @@
 # Workflow 6 — Transform Labs LinkedIn Carousel Generator
 
-> **File:** [`workflows/transform-labs-linkedin-carousel.json`](../../workflows/transform-labs-linkedin-carousel.json) *(JSON to be added)*
+> **File:** `workflows/transform-labs-linkedin-carousel.json` *(JSON to be added)*
 > **Trigger:** Mondays at 8:15 AM weekly
 > **Per-run cost:** ~$0.40–$0.80 (depends on iteration count through critic loop)
 
@@ -14,47 +14,47 @@ This is the most ambitious AI-evaluation pipeline in the repo — the critic enf
 
 ```mermaid
 flowchart TB
-    subgraph trig[Trigger]
-        T[Mondays @ 8:15 AM]:::trigger
+    subgraph trig["Trigger"]
+        T["Mondays @ 8:15 AM"]:::trigger
     end
 
-    subgraph rss[RSS aggregation - 5 sources]
-        R1[OhioX Tech]:::data
-        R2[Wired AI]:::data
-        R3[MIT Tech Review]:::data
-        R4[Ars Technica AI]:::data
-        R5[TechCrunch AI]:::data
-        MERGE[Merge -> Dedupe<br/>by guid -> Limit 50]:::core
+    subgraph rss["RSS aggregation - 5 sources"]
+        R1["OhioX Tech"]:::data
+        R2["Wired AI"]:::data
+        R3["MIT Tech Review"]:::data
+        R4["Ars Technica AI"]:::data
+        R5["TechCrunch AI"]:::data
+        MERGE["Merge → Dedupe<br/>by guid → Limit 50"]:::core
     end
 
-    subgraph pick[Topic + research]
-        TS[Topic Selector<br/>Gemini 3 Pro]:::ai
-        RES[Deep Research Agent<br/>Claude Sonnet 4.5<br/>+ SerpAPI tool]:::ai
+    subgraph pick["Topic + research"]
+        TS["Topic Selector<br/>Gemini 3 Pro"]:::ai
+        RES["Deep Research Agent<br/>Claude Sonnet 4.5<br/>+ SerpAPI tool"]:::ai
     end
 
-    subgraph write[Distill + write]
-        DIS[Distiller<br/>Claude Sonnet 4.5]:::ai
-        SW[Slide Writer<br/>Claude Sonnet 4.5]:::ai
-        CW[Caption Writer<br/>Claude Sonnet 4.5]:::ai
+    subgraph write["Distill + write"]
+        DIS["Distiller<br/>Claude Sonnet 4.5"]:::ai
+        SW["Slide Writer<br/>Claude Sonnet 4.5"]:::ai
+        CW["Caption Writer<br/>Claude Sonnet 4.5"]:::ai
     end
 
-    subgraph loop[Critic-Reviser loop]
-        INIT[Initialize Iter Counter]:::core
-        CRIT[Carousel Critic<br/>Gemini 3 Pro<br/>weighted scoring]:::ai
-        VAL[Validate Output<br/>auto-pass on empty]:::core
-        REV[Slide Reviser<br/>Claude Sonnet 4.5]:::ai
-        INC[Increment Iteration]:::core
-        QG{Quality Gate<br/>score >= 9 OR<br/>iter >= 6}:::core
+    subgraph loop["Critic-Reviser loop"]
+        INIT["Initialize Iter Counter"]:::core
+        CRIT["Carousel Critic<br/>Gemini 3 Pro<br/>weighted scoring"]:::ai
+        VAL["Validate Output<br/>auto-pass on empty"]:::core
+        REV["Slide Reviser<br/>Claude Sonnet 4.5"]:::ai
+        INC["Increment Iteration"]:::core
+        QG{"Quality Gate<br/>score >= 9 OR<br/>iter >= 6"}:::core
     end
 
-    subgraph render[Render + publish]
-        HTML[Generate Slide HTML<br/>600+ line JS<br/>3D gradient design]:::core
-        PREP[Prepare Slides<br/>build screenshot URLs]:::core
-        SHOT[ScreenshotOne API<br/>1080x1350 PNG]:::out
-        BLOB[Azure Blob upload]:::data
-        COLL[Collect All Slides]:::core
-        NOT[Notion Content HQ<br/>Carousel-LinkedIn<br/>Status=Not Published]:::data
-        SLACK[Slack rich blocks<br/>#marketing-linkedin-posts]:::out
+    subgraph render["Render + publish"]
+        HTML["Generate Slide HTML<br/>600+ line JS<br/>3D gradient design"]:::core
+        PREP["Prepare Slides<br/>build screenshot URLs"]:::core
+        SHOT["ScreenshotOne API<br/>1080x1350 PNG"]:::out
+        BLOB["Azure Blob upload"]:::data
+        COLL["Collect All Slides"]:::core
+        NOT["Notion Content HQ<br/>Carousel-LinkedIn<br/>Status=Not Published"]:::data
+        SLACK["Slack rich blocks<br/>#marketing-linkedin-posts"]:::out
     end
 
     T --> R1 & R2 & R3 & R4 & R5 --> MERGE --> TS --> RES
