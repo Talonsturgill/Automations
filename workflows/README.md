@@ -10,6 +10,7 @@ This directory holds the raw n8n workflow JSONs. Each one is the source of recor
 | `crypto-trend-tweet-generator.json` | [W2](../docs/workflows/crypto-trend-tweet-generator.md) |
 | `news-to-twitter-distribution.json` | [W3](../docs/workflows/news-to-twitter-distribution.md) |
 | `autonomous-ai-agent-system.json` | [W4](../docs/workflows/autonomous-ai-agent-system.md) |
+| `transform-labs-event-promo.json` | [W5](../docs/workflows/transform-labs-event-promo.md) |
 
 ## Sanitization
 
@@ -29,4 +30,4 @@ Import each file. Then attach credentials in the n8n credential manager — see 
 
 ## Sub-workflows
 
-Workflows 2 and 4 reference sub-workflow tools (`toolWorkflow`) by `workflowId`. These sub-workflows are not in this directory; they live in the same n8n instance and are documented at the interface level in each parent workflow's deep-dive. If you import the parents into a fresh n8n instance, you'll need to either also import the sub-workflows or repoint the orchestrator's tool array to your equivalents.
+Workflows 2, 4, and 5 reference sub-workflow tools (`toolWorkflow`) by `workflowId`. These sub-workflows are not in this directory; they live in the same n8n instance and are documented at the interface level in each parent workflow's deep-dive. If you import the parents into a fresh n8n instance, you'll need to either also import the sub-workflows or repoint the orchestrator's tool array to your equivalents.
