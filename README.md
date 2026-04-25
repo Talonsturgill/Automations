@@ -38,80 +38,101 @@ Each workflow is a self-contained system with its own trigger surface, prompt de
 
 **Weekly LinkedIn thought-leadership post + quote-card generator with voice-impersonation quality gate.** A web-search-grounded Gemini agent generates one quotable insight in the founder's voice, a second Gemini agent does a strictly-bounded research pass (2-3 searches max), and Claude Sonnet 4.5 writes a 500-1000 character post tuned for LinkedIn's "...more" fold (any `\n\n` in the first 250 characters is a hard fail because it triggers premature truncation). The post then loops through a Claude critic (five weighted categories, voice-impersonation as a hard-fail criterion) and a Claude editor until score ≥8.9 or five iterations. The quotable insight is rendered onto a 1080×1080 PNG quote card via the same ScreenshotOne → Azure Blob pipeline as W6, then both land in Notion Content HQ behind a human approval gate. Two-input pipeline: scheduled (Thursdays 8:45 AM) + manual `/thought` Slack command (planned). *Voice impersonation as a quality gate, format-aware writing, shared render pipeline.*
 
+### 8. [Transform Labs Fractional CTO LinkedIn Engine](docs/workflows/transform-labs-fractional-cto-linkedin.md)
+
+**Weekly long-form LinkedIn post targeting C-suite executives at mid-market companies, with outline-first writing and an aggressive AI-tells critique loop.** Pulls from five corporate-and-enterprise RSS feeds (HBR, MIT Sloan Review, McKinsey Insights, Fortune Tech, CIO.com), a Claude News Selector picks the article with the strongest fractional-CTO positioning angle, a dedicated Outline Agent produces a 20-field strategic blueprint (hook strategy, paragraph-by-paragraph structure, key points, tone calibration, target length, quotable insight) before any drafting happens, then Claude Sonnet 4.5 writes a 1800-2500 character post. The post runs through a Claude critic (5-dimension weighted scoring, anti-inflation prompt anchoring, long anti-AI-tells checklist, ~15 hard-fail rules including the `". But"` sentence-start ban and `we`-not-`I` firm-voice rule) and a Claude editor with a 7-item self-check until score ≥8 or five iterations. A 1080×1080 quote-card PNG is rendered before the loop (so the loop never re-renders), then a JS chunker splits the final post into ≤2000-char Notion paragraph blocks for human review. Runs Fridays at 8:45 AM. *Outline-first architecture, anti-AI-tells engineering, anti-inflation scoring, Notion paragraph chunking.*
+
 ---
 
 ## System view
 
 ```mermaid
 flowchart LR
-    subgraph triggers[Triggers]
-        S1[Schedule]
-        MENT[X mentions<br/>20-min poll]
-        CHAT[Chat trigger]
-        RSS[RSS poll]
-        WH[Webhook]
+    subgraph triggers["Triggers"]
+        S1["Schedule"]
+        MENT["X mentions<br/>20-min poll"]
+        CHAT["Chat trigger"]
+        RSS["RSS poll"]
+        WH["Webhook"]
     end
 
-    subgraph sources[Inputs]
-        WEB[OpenAI<br/>web search]
-        CG[CoinGecko]
-        CC[CryptoCompare<br/>news]
-        TW[Twitter API v2]
-        MEET[Meetup RSS]
+    subgraph sources["Inputs"]
+        WEB["OpenAI<br/>web search"]
+        CG["CoinGecko"]
+        CC["CryptoCompare<br/>news"]
+        TW["Twitter API v2"]
+        MEET["Meetup RSS"]
     end
 
-    subgraph engines[n8n Workflows]
-        W1[W1 — Content Engine<br/>linear, 7 LLMs]
-        W2[W2 — Trend Tweets<br/>orchestrator + 4 tools]
-        W3[W3 — News-to-X<br/>curator + writer]
-        W4[W4 — Autonomous System<br/>master + 8 tools + memory]
-        W5[W5 — Event Promo<br/>strategist + writer team<br/>+ native evals]
-        W6[W6 — LinkedIn Carousel<br/>writer + critic-reviser loop<br/>+ HTML render pipeline]
-        W7[W7 — Thought Leadership<br/>insight + writer + critic loop<br/>+ quote-card render]
+    subgraph engines["n8n Workflows"]
+        W1["W1 - Content Engine<br/>linear, 7 LLMs"]
+        W2["W2 - Trend Tweets<br/>orchestrator + 4 tools"]
+        W3["W3 - News-to-X<br/>curator + writer"]
+        W4["W4 - Autonomous System<br/>master + 8 tools + memory"]
+        W5["W5 - Event Promo<br/>strategist + writer team<br/>+ native evals"]
+        W6["W6 - LinkedIn Carousel<br/>writer + critic-reviser loop<br/>+ HTML render pipeline"]
+        W7["W7 - Thought Leadership<br/>insight + writer + critic loop<br/>+ quote-card render"]
+        W8["W8 - Fractional CTO<br/>selector + outline + writer<br/>+ critique-edit loop"]
     end
 
-    subgraph memory[State]
-        PG[(Supabase pgvector)]
-        RD[(Redis dedup)]
-        NOT[(Notion CMS)]
-        BLOB[(Azure Blob)]
+    subgraph memory["State"]
+        PG[("Supabase pgvector")]
+        RD[("Redis dedup")]
+        NOT[("Notion CMS")]
+        BLOB[("Azure Blob")]
     end
 
-    subgraph out[Outputs]
-        LI[LinkedIn /<br/>Microvest org]
-        TM[X / @Microvest]
-        TD[X / @Drippy_io]
-        TY[X / @Droopyy_io]
-        TG[Telegram briefing]
-        EM[Constant Contact<br/>email list]
-        LC[LinkedIn Carousel /<br/>Transform Labs]
-        LT[LinkedIn Post +<br/>Quote Card /<br/>Transform Labs]
+    subgraph outputs["Outputs"]
+        LI["LinkedIn /<br/>Microvest org"]
+        TM["X / @Microvest"]
+        TD["X / @Drippy_io"]
+        TY["X / @Droopyy_io"]
+        TG["Telegram briefing"]
+        EM["Constant Contact<br/>email list"]
+        LC["LinkedIn Carousel /<br/>Transform Labs"]
+        LT["LinkedIn Post +<br/>Quote Card /<br/>Transform Labs"]
+        LF["LinkedIn Long-Form +<br/>Quote Card /<br/>Transform Labs"]
     end
 
-    S1 --> WEB & CG & CC
+    S1 --> WEB
+    S1 --> CG
+    S1 --> CC
+    S1 --> W7
     RSS --> MEET
-    WEB --> W1 --> LI & TM & TD & TY
-    CG --> W2 --> TD & TY
-    CC --> W3 --> TM & TG
+    RSS --> W6
+    RSS --> W8
+    WEB --> W1
+    CG --> W2
+    CC --> W3
     MENT --> W4
     CHAT --> W4
     TW --> W4
-    W4 <--> PG
-    W4 <--> RD
-    W4 --> TD & TY
     MEET --> W5
     WH --> W5
+    W1 --> LI
+    W1 --> TM
+    W1 --> TD
+    W1 --> TY
+    W2 --> TD
+    W2 --> TY
+    W3 --> TM
+    W3 --> TG
+    W4 <--> PG
+    W4 <--> RD
+    W4 --> TD
+    W4 --> TY
     W5 <--> NOT
     W5 <--> BLOB
     W5 --> EM
-    RSS --> W6
     W6 <--> NOT
     W6 <--> BLOB
     W6 --> LC
-    S1 --> W7
     W7 <--> NOT
     W7 <--> BLOB
     W7 --> LT
+    W8 <--> NOT
+    W8 <--> BLOB
+    W8 --> LF
 ```
 
 Every other diagram in this repo is generated the same way — by walking the n8n JSON's `nodes` and `connections` keys.
@@ -131,6 +152,8 @@ The bullets below are the engineering choices that shaped the system. Each one i
 - **Custom HTML render + screenshot pipeline.** Workflow 6's slide generator is a 600+ line JS code node that produces a fully-branded design system per slide — four-stop gradient backgrounds, 3D glass panels via `transform: perspective` rotations, radial glow orbs, per-role layouts (hook / insight / cta / brand_close), Plus Jakarta Sans + DM Sans typography, ghost numbers, progress bars. ScreenshotOne renders each HTML slide to a 1080×1350 PNG, Azure Blob hosts the assets, Notion embeds them inline. Workflow 7 reuses the same screenshot pipeline at 1080×1080 for quote cards. *See [`docs/workflows/transform-labs-linkedin-carousel.md`](docs/workflows/transform-labs-linkedin-carousel.md#stage-8--html-slide-generation).*
 
 - **Voice impersonation as a quality gate.** Workflow 7's critic isn't scoring "is this a good LinkedIn post" — it's scoring "would Ryan Frederick's followers recognize this as his writing." The system prompt grounds the critic in worked examples from his actual Medium posts and treats "sounds like it could come from any company" as a hard fail alongside the punctuation and structural rules. The same workflow encodes platform-physics: any `\n\n` in the first 250 characters is a hard fail because LinkedIn's "...more" fold collapses early when it sees a paragraph break. *See [`docs/workflows/transform-labs-linkedin-thought-leadership.md`](docs/workflows/transform-labs-linkedin-thought-leadership.md#stage-5--critic-reviser-loop).*
+
+- **Outline-first writing + anti-AI-tells engineering.** Workflow 8 separates strategy from prose: a dedicated `Outline Agent` produces a 20-field strategic blueprint (hook strategy, 6-paragraph structure, key points, tone calibration, target length, quotable insight) before the writer ever drafts. Both the writer and critic prompts encode an unusually long checklist of patterns that signal LLM-generated content — back-to-back short sentences, the `[Noun] isn't X. It's Y.` pattern, repeated sentence starters, fragment lists, `It means... It requires...` chains, vague `around` connectors. The critic prompt explicitly anchors the 1-10 scoring scale and instructs the model to default to "the draft is flawed," forbidding 10s — the practical answer to "LLM judges grade everything 8/10." *See [`docs/workflows/transform-labs-fractional-cto-linkedin.md`](docs/workflows/transform-labs-fractional-cto-linkedin.md#stage-3--strategic-outline).*
 
 - **Multi-vendor LLM strategy.** Anthropic Claude Sonnet 4.5 for the W5 email strategist (less generic marketing copy on this prompt class), Azure OpenAI `gpt-5-mini` for W5 extraction and parsers, OpenAI `gpt-5.1` for W4's master coordinator, OpenAI `gpt-5-mini` for analysis-class agents, OpenAI `gpt-image-1` for LinkedIn images, OpenAI `text-embedding-3-small` for vector memory. Picked per task, not per vendor preference.
 
@@ -153,10 +176,10 @@ The bullets below are the engineering choices that shaped the system. Each one i
 | Layer | What I use here |
 |---|---|
 | **Orchestration** | n8n (cloud) — schedule / RSS / webhook / chat / eval triggers, AI agent / tool agent / structured output parser nodes, sub-workflow tool invocation, native evaluation framework |
-| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary, W7 hashtags); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise; W7 write / critic / edit); Google Gemini 3 Pro (W6 topic selector + critic; W7 research); Google Gemini 3.1 Pro (W7 insight generator) |
-| **State + storage** | Supabase Postgres + pgvector (`conversation_memory`, `ai_knowledge_base`, `match_conversation_memory` RPC); Redis (`processed_tweet:*` dedup); Notion (Events DB, Content HQ approval workflow); Azure Blob Storage (event images, carousel slide PNGs, thought-leadership quote cards) |
-| **External APIs** | LinkedIn Marketing API, Twitter/X API v2 (OAuth2 × 3 accounts + Bearer mention search), CoinGecko (3 endpoints), CryptoCompare News API, Telegram Bot API, Meetup RSS, AI-news RSS (TechCrunch / Wired / MIT Tech Review / Ars Technica / OhioX), OpenAI (chat + image + embeddings), Anthropic, Google Gemini, SerpAPI, ScreenshotOne, Constant Contact (OAuth2), Slack (4 channels + slash commands) |
-| **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, structured output parsing with autoFix, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, critic-reviser loops with bounded iteration, cross-vendor LLM judging, voice-impersonation quality gates, format-aware writing (LinkedIn fold-physics encoding), HTML-to-PNG render pipelines, human-in-the-loop approval gates, multi-vendor LLM routing |
+| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary, W7 hashtags); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise; W7 write / critic / edit; W8 select / outline / write / critique / edit); Google Gemini 3 Pro (W6 topic selector + critic; W7 research); Google Gemini 3.1 Pro (W7 insight generator) |
+| **State + storage** | Supabase Postgres + pgvector (`conversation_memory`, `ai_knowledge_base`, `match_conversation_memory` RPC); Redis (`processed_tweet:*` dedup); Notion (Events DB, Content HQ approval workflow with platform-segmented entries); Azure Blob Storage (event images, carousel slide PNGs, thought-leadership + fractional-CTO quote cards) |
+| **External APIs** | LinkedIn Marketing API, Twitter/X API v2 (OAuth2 × 3 accounts + Bearer mention search), CoinGecko (3 endpoints), CryptoCompare News API, Telegram Bot API, Meetup RSS, AI-news RSS (TechCrunch / Wired / MIT Tech Review / Ars Technica / OhioX), corporate-and-enterprise RSS (HBR / MIT Sloan / McKinsey / Fortune / CIO.com), OpenAI (chat + image + embeddings), Anthropic, Google Gemini, SerpAPI, ScreenshotOne, Constant Contact (OAuth2), Slack (4 channels + slash commands) |
+| **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, outline-first writing, structured output parsing with autoFix, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, critic-reviser loops with bounded iteration, cross-vendor LLM judging, voice-impersonation quality gates, anti-AI-tells detection, anti-inflation scoring instructions, format-aware writing (LinkedIn fold-physics encoding), HTML-to-PNG render pipelines, Notion paragraph chunking, human-in-the-loop approval gates, multi-vendor LLM routing |
 
 ---
 
