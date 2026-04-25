@@ -42,6 +42,10 @@ Each workflow is a self-contained system with its own trigger surface, prompt de
 
 **Weekly long-form LinkedIn post targeting C-suite executives at mid-market companies, with outline-first writing and an aggressive AI-tells critique loop.** Pulls from five corporate-and-enterprise RSS feeds (HBR, MIT Sloan Review, McKinsey Insights, Fortune Tech, CIO.com), a Claude News Selector picks the article with the strongest fractional-CTO positioning angle, a dedicated Outline Agent produces a 20-field strategic blueprint (hook strategy, paragraph-by-paragraph structure, key points, tone calibration, target length, quotable insight) before any drafting happens, then Claude Sonnet 4.5 writes a 1800-2500 character post. The post runs through a Claude critic (5-dimension weighted scoring, anti-inflation prompt anchoring, long anti-AI-tells checklist, ~15 hard-fail rules including the `". But"` sentence-start ban and `we`-not-`I` firm-voice rule) and a Claude editor with a 7-item self-check until score ≥8 or five iterations. A 1080×1080 quote-card PNG is rendered before the loop (so the loop never re-renders), then a JS chunker splits the final post into ≤2000-char Notion paragraph blocks for human review. Runs Fridays at 8:45 AM. *Outline-first architecture, anti-AI-tells engineering, anti-inflation scoring, Notion paragraph chunking.*
 
+### 9. [Transform Labs AI Transformation Carousel Engine](docs/workflows/transform-labs-ai-transformation-carousel.md)
+
+**Weekly theme-first 8-slide LinkedIn carousel with rigid slide-role spine.** A Gemini Theme Discovery agent searches the web (max 5 calls) for one contrarian AI-transformation angle, a second Gemini agent does a strictly-bounded research pass (max 3 calls) to find 5-6 mid-market industry examples *with specific metrics*, then Claude Sonnet 4.5 writes a fixed 8-slide carousel: 1 hook + 5 industry-example body slides (each lead with a metric, e.g. `Healthcare + 40% Faster Diagnoses`) + 1 reinforcing-stat slide + 1 CTA. The output runs through a Claude critic-editor loop with REJECT-by-default scoring + ~25 banned phrases + hedging-word ban (`might/could/would/may`) until score ≥9.1 or five iterations. Slides render via an Azure-hosted HTML template with URL-encoded params per slide type — different from W6's inline 600+ line generator. ScreenshotOne → Azure Blob → Notion approval gate → Slack notification. Runs Wednesdays at 8:45 AM. *Theme-first authoring, rigid slide-role spine, templated render, REJECT-by-default critic.*
+
 ---
 
 ## System view
@@ -73,6 +77,7 @@ flowchart LR
         W6["W6 - LinkedIn Carousel<br/>writer + critic-reviser loop<br/>+ HTML render pipeline"]
         W7["W7 - Thought Leadership<br/>insight + writer + critic loop<br/>+ quote-card render"]
         W8["W8 - Fractional CTO<br/>selector + outline + writer<br/>+ critique-edit loop"]
+        W9["W9 - AI Theme Carousel<br/>theme + research + 8-slide writer<br/>+ critic-editor loop"]
     end
 
     subgraph memory["State"]
@@ -92,6 +97,7 @@ flowchart LR
         LC["LinkedIn Carousel /<br/>Transform Labs"]
         LT["LinkedIn Post +<br/>Quote Card /<br/>Transform Labs"]
         LF["LinkedIn Long-Form +<br/>Quote Card /<br/>Transform Labs"]
+        LA["LinkedIn AI Theme<br/>Carousel /<br/>Transform Labs"]
     end
 
     S1 --> WEB
@@ -133,6 +139,10 @@ flowchart LR
     W8 <--> NOT
     W8 <--> BLOB
     W8 --> LF
+    S1 --> W9
+    W9 <--> NOT
+    W9 <--> BLOB
+    W9 --> LA
 ```
 
 Every other diagram in this repo is generated the same way — by walking the n8n JSON's `nodes` and `connections` keys.
@@ -155,6 +165,8 @@ The bullets below are the engineering choices that shaped the system. Each one i
 
 - **Outline-first writing + anti-AI-tells engineering.** Workflow 8 separates strategy from prose: a dedicated `Outline Agent` produces a 20-field strategic blueprint (hook strategy, 6-paragraph structure, key points, tone calibration, target length, quotable insight) before the writer ever drafts. Both the writer and critic prompts encode an unusually long checklist of patterns that signal LLM-generated content — back-to-back short sentences, the `[Noun] isn't X. It's Y.` pattern, repeated sentence starters, fragment lists, `It means... It requires...` chains, vague `around` connectors. The critic prompt explicitly anchors the 1-10 scoring scale and instructs the model to default to "the draft is flawed," forbidding 10s — the practical answer to "LLM judges grade everything 8/10." *See [`docs/workflows/transform-labs-fractional-cto-linkedin.md`](docs/workflows/transform-labs-fractional-cto-linkedin.md#stage-3--strategic-outline).*
 
+- **Theme-first authoring with rigid slide-role spine.** Workflow 9 picks a *theme* rather than a single article, then researches 5-6 mid-market industry examples to populate a fixed 8-slide spine (`hook → body × 5 → stat → cta`). Every body slide is required to lead with a specific metric (`Healthcare + 40% Faster Diagnoses`); the structure is the brand voice, which is what makes the publication recognizable week to week. Slides render via an Azure-hosted HTML template with URL-encoded params per slide type — different from W6's 600+ line inline render. Tradeoff: less per-slide visual variety, much simpler per-run code paths. *See [`docs/workflows/transform-labs-ai-transformation-carousel.md`](docs/workflows/transform-labs-ai-transformation-carousel.md#stage-4--write).*
+
 - **Multi-vendor LLM strategy.** Anthropic Claude Sonnet 4.5 for the W5 email strategist (less generic marketing copy on this prompt class), Azure OpenAI `gpt-5-mini` for W5 extraction and parsers, OpenAI `gpt-5.1` for W4's master coordinator, OpenAI `gpt-5-mini` for analysis-class agents, OpenAI `gpt-image-1` for LinkedIn images, OpenAI `text-embedding-3-small` for vector memory. Picked per task, not per vendor preference.
 
 - **Prompt engineering with structural differentiation.** Workflow 1 takes one news article and produces three voices — Microvest brand voice (analytical, ~200 chars, no first-person), Drippy (upbeat mascot, ~100 chars, high-school reading level), Droopy (cynical NY attitude, ~100 chars, hashtag-formula closer). Banned emoji set, banned punctuation set, and reading-level targets are enforced in-prompt across all three. *See [`docs/workflows/microvest-content-engine.md`](docs/workflows/microvest-content-engine.md).*
@@ -176,10 +188,10 @@ The bullets below are the engineering choices that shaped the system. Each one i
 | Layer | What I use here |
 |---|---|
 | **Orchestration** | n8n (cloud) — schedule / RSS / webhook / chat / eval triggers, AI agent / tool agent / structured output parser nodes, sub-workflow tool invocation, native evaluation framework |
-| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary, W7 hashtags); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise; W7 write / critic / edit; W8 select / outline / write / critique / edit); Google Gemini 3 Pro (W6 topic selector + critic; W7 research); Google Gemini 3.1 Pro (W7 insight generator) |
+| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary, W7 hashtags); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise; W7 write / critic / edit; W8 select / outline / write / critique / edit; W9 write / critic / edit); Google Gemini 3 Pro (W6 topic selector + critic; W7 research; W9 theme + research); Google Gemini 3.1 Pro (W7 insight generator) |
 | **State + storage** | Supabase Postgres + pgvector (`conversation_memory`, `ai_knowledge_base`, `match_conversation_memory` RPC); Redis (`processed_tweet:*` dedup); Notion (Events DB, Content HQ approval workflow with platform-segmented entries); Azure Blob Storage (event images, carousel slide PNGs, thought-leadership + fractional-CTO quote cards) |
 | **External APIs** | LinkedIn Marketing API, Twitter/X API v2 (OAuth2 × 3 accounts + Bearer mention search), CoinGecko (3 endpoints), CryptoCompare News API, Telegram Bot API, Meetup RSS, AI-news RSS (TechCrunch / Wired / MIT Tech Review / Ars Technica / OhioX), corporate-and-enterprise RSS (HBR / MIT Sloan / McKinsey / Fortune / CIO.com), OpenAI (chat + image + embeddings), Anthropic, Google Gemini, SerpAPI, ScreenshotOne, Constant Contact (OAuth2), Slack (4 channels + slash commands) |
-| **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, outline-first writing, structured output parsing with autoFix, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, critic-reviser loops with bounded iteration, cross-vendor LLM judging, voice-impersonation quality gates, anti-AI-tells detection, anti-inflation scoring instructions, format-aware writing (LinkedIn fold-physics encoding), HTML-to-PNG render pipelines, Notion paragraph chunking, human-in-the-loop approval gates, multi-vendor LLM routing |
+| **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, outline-first writing, theme-first authoring, rigid slide-role spines, structured output parsing with autoFix, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, critic-reviser loops with bounded iteration, cross-vendor LLM judging, voice-impersonation quality gates, anti-AI-tells detection, anti-inflation scoring instructions, REJECT-by-default critics, format-aware writing (LinkedIn fold-physics encoding), HTML-to-PNG render pipelines (inline-generated and template-driven), Notion paragraph chunking, human-in-the-loop approval gates, multi-vendor LLM routing |
 
 ---
 
