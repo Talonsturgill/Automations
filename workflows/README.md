@@ -13,6 +13,7 @@ This directory holds the raw n8n workflow JSONs. Each one is the source of recor
 | `transform-labs-event-promo.json` | [W5](../docs/workflows/transform-labs-event-promo.md) |
 | `transform-labs-linkedin-carousel.json` | [W6](../docs/workflows/transform-labs-linkedin-carousel.md) |
 | `transform-labs-linkedin-thought-leadership.json` | [W7](../docs/workflows/transform-labs-linkedin-thought-leadership.md) |
+| `transform-labs-fractional-cto-linkedin.json` | [W8](../docs/workflows/transform-labs-fractional-cto-linkedin.md) |
 
 ## Sanitization
 
