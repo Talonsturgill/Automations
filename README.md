@@ -30,6 +30,10 @@ Each workflow is a self-contained system with its own trigger surface, prompt de
 
 **End-to-end event promotion pipeline with native n8n evals.** Discovers Columbus AI Meetup events from RSS, crawls each page with an Azure OpenAI extractor, drafts a branded email through an Anthropic Claude Sonnet 4.5 strategist + writer-team sub-workflow, gates the draft behind a Notion approval workflow, and publishes approved emails to a Constant Contact list at 9:02 AM daily. Includes a versioned test dataset and eleven quantitative quality metrics for the generated copy. *Multi-LLM, full content lifecycle, production-grade evals.*
 
+### 6. [Transform Labs LinkedIn Carousel Generator](docs/workflows/transform-labs-linkedin-carousel.md)
+
+**Weekly LinkedIn PDF carousel pipeline with a critic-reviser quality gate.** Aggregates AI news from five RSS feeds (TechCrunch, Wired, MIT Tech Review, Ars Technica, OhioX), Gemini 3 Pro picks the single best article for a multi-slide breakdown, Claude Sonnet 4.5 + SerpAPI deep-researches it, distills into 6-8 insights, and writes 8-10 slides plus a LinkedIn caption in the founder's voice. The output then loops through a Gemini critic (six weighted scoring categories, ~50 hard-fail rules, math enforced in the prompt) and a Claude reviser until score ≥9 or six iterations. A 600+ line JS code node renders the slides as branded 3D-gradient HTML, ScreenshotOne converts each one to PNG, Azure Blob hosts the assets, and the assembled carousel lands in Notion Content HQ behind a human approval gate with a Slack notification to `#marketing-linkedin-posts`. Runs Mondays at 8:15 AM. *Cross-vendor judge (Gemini grades Claude), bounded-iteration loop, custom render pipeline, approval gate.*
+
 ---
 
 ## System view
@@ -58,6 +62,7 @@ flowchart LR
         W3[W3 — News-to-X<br/>curator + writer]
         W4[W4 — Autonomous System<br/>master + 8 tools + memory]
         W5[W5 — Event Promo<br/>strategist + writer team<br/>+ native evals]
+        W6[W6 — LinkedIn Carousel<br/>writer + critic-reviser loop<br/>+ HTML render pipeline]
     end
 
     subgraph memory[State]
@@ -74,6 +79,7 @@ flowchart LR
         TY[X / @Droopyy_io]
         TG[Telegram briefing]
         EM[Constant Contact<br/>email list]
+        LC[LinkedIn Carousel /<br/>Transform Labs]
     end
 
     S1 --> WEB & CG & CC
@@ -92,6 +98,10 @@ flowchart LR
     W5 <--> NOT
     W5 <--> BLOB
     W5 --> EM
+    RSS --> W6
+    W6 <--> NOT
+    W6 <--> BLOB
+    W6 --> LC
 ```
 
 Every other diagram in this repo is generated the same way — by walking the n8n JSON's `nodes` and `connections` keys.
@@ -105,6 +115,10 @@ The bullets below are the engineering choices that shaped the system. Each one i
 - **Agentic architecture (hierarchical orchestration).** Workflows 2, 4, and 5 use orchestrator agents that call other workflows as tools (`toolWorkflow`). The master agent in Workflow 4 has eight tool agents — Engagement, Trend Monitor, Customer Support, Data Analyst, Community Builder, Banter Coordinator, Personality, Performance Analysis — and picks which to invoke based on a trigger-type → agent map. *See [`docs/workflows/autonomous-ai-agent-system.md`](docs/workflows/autonomous-ai-agent-system.md).*
 
 - **Production-grade AI evals.** Workflow 5 uses n8n's native evaluation framework with a versioned test dataset and eleven quantitative quality gates (word count, banned-word presence, punctuation compliance, speaker mention, emoji count, ticket-link presence, and more). Every style rule enforced in the prompt is also enforced in the metrics, so prompt drift is caught instead of shipped. *See [`docs/workflows/transform-labs-event-promo.md`](docs/workflows/transform-labs-event-promo.md#stage-4--evaluation-routing).*
+
+- **Critic-reviser loop with bounded iteration and cross-vendor judging.** Workflow 6 runs a Gemini 3 Pro critic against a Claude Sonnet 4.5 writer, scoring six weighted categories with ~50 enumerated hard-fail rules and an explicit math formula the critic must show its work on. A reviser node applies surgical fixes; the loop exits on `score ≥ 9` OR `iteration_count ≥ 6` so worst-case API spend is bounded. The validator node auto-passes on empty critic responses to defend against infinite loops. *See [`docs/workflows/transform-labs-linkedin-carousel.md`](docs/workflows/transform-labs-linkedin-carousel.md#stage-7--critic-reviser-loop).*
+
+- **Custom HTML render + screenshot pipeline.** Workflow 6's slide generator is a 600+ line JS code node that produces a fully-branded design system per slide — four-stop gradient backgrounds, 3D glass panels via `transform: perspective` rotations, radial glow orbs, per-role layouts (hook / insight / cta / brand_close), Plus Jakarta Sans + DM Sans typography, ghost numbers, progress bars. ScreenshotOne renders each HTML slide to a 1080×1350 PNG, Azure Blob hosts the assets, Notion embeds them inline. *See [`docs/workflows/transform-labs-linkedin-carousel.md`](docs/workflows/transform-labs-linkedin-carousel.md#stage-8--html-slide-generation).*
 
 - **Multi-vendor LLM strategy.** Anthropic Claude Sonnet 4.5 for the W5 email strategist (less generic marketing copy on this prompt class), Azure OpenAI `gpt-5-mini` for W5 extraction and parsers, OpenAI `gpt-5.1` for W4's master coordinator, OpenAI `gpt-5-mini` for analysis-class agents, OpenAI `gpt-image-1` for LinkedIn images, OpenAI `text-embedding-3-small` for vector memory. Picked per task, not per vendor preference.
 
@@ -127,10 +141,10 @@ The bullets below are the engineering choices that shaped the system. Each one i
 | Layer | What I use here |
 |---|---|
 | **Orchestration** | n8n (cloud) — schedule / RSS / webhook / chat / eval triggers, AI agent / tool agent / structured output parser nodes, sub-workflow tool invocation, native evaluation framework |
-| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction); Anthropic Claude Sonnet 4.5 (W5 email strategist) |
-| **State + storage** | Supabase Postgres + pgvector (`conversation_memory`, `ai_knowledge_base`, `match_conversation_memory` RPC); Redis (`processed_tweet:*` dedup); Notion (Events DB, Content HQ approval workflow); Azure Blob Storage (event images) |
-| **External APIs** | LinkedIn Marketing API, Twitter/X API v2 (OAuth2 × 3 accounts + Bearer mention search), CoinGecko (3 endpoints), CryptoCompare News API, Telegram Bot API, Meetup RSS, OpenAI (chat + image + embeddings), Anthropic, Constant Contact (OAuth2), Slack (3 channels) |
-| **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, structured output parsing with autoFix, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, human-in-the-loop approval gates, multi-vendor LLM routing |
+| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise); Google Gemini 3 Pro (W6 topic selector + critic) |
+| **State + storage** | Supabase Postgres + pgvector (`conversation_memory`, `ai_knowledge_base`, `match_conversation_memory` RPC); Redis (`processed_tweet:*` dedup); Notion (Events DB, Content HQ approval workflow); Azure Blob Storage (event images, carousel slide PNGs) |
+| **External APIs** | LinkedIn Marketing API, Twitter/X API v2 (OAuth2 × 3 accounts + Bearer mention search), CoinGecko (3 endpoints), CryptoCompare News API, Telegram Bot API, Meetup RSS, AI-news RSS (TechCrunch / Wired / MIT Tech Review / Ars Technica / OhioX), OpenAI (chat + image + embeddings), Anthropic, Google Gemini, SerpAPI, ScreenshotOne, Constant Contact (OAuth2), Slack (4 channels) |
+| **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, structured output parsing with autoFix, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, critic-reviser loops with bounded iteration, cross-vendor LLM judging, HTML-to-PNG render pipelines, human-in-the-loop approval gates, multi-vendor LLM routing |
 
 ---
 
