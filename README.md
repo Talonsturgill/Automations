@@ -46,6 +46,10 @@ Each workflow is a self-contained system with its own trigger surface, prompt de
 
 **Weekly theme-first 8-slide LinkedIn carousel with rigid slide-role spine.** A Gemini Theme Discovery agent searches the web (max 5 calls) for one contrarian AI-transformation angle, a second Gemini agent does a strictly-bounded research pass (max 3 calls) to find 5-6 mid-market industry examples *with specific metrics*, then Claude Sonnet 4.5 writes a fixed 8-slide carousel: 1 hook + 5 industry-example body slides (each lead with a metric, e.g. `Healthcare + 40% Faster Diagnoses`) + 1 reinforcing-stat slide + 1 CTA. The output runs through a Claude critic-editor loop with REJECT-by-default scoring + ~25 banned phrases + hedging-word ban (`might/could/would/may`) until score ≥9.1 or five iterations. Slides render via an Azure-hosted HTML template with URL-encoded params per slide type — different from W6's inline 600+ line generator. ScreenshotOne → Azure Blob → Notion approval gate → Slack notification. Runs Wednesdays at 8:45 AM. *Theme-first authoring, rigid slide-role spine, templated render, REJECT-by-default critic.*
 
+### 10. [Transform Labs Inbox Event Ingester](docs/workflows/transform-labs-inbox-event-ingester.md)
+
+**Email-in event ingestion that feeds W5.** Polls the marketing inbox every 2 hours via Microsoft Graph, runs every email through a Claude classifier (`is this a real event vs. an OTP, newsletter, receipt, or spam?`), then through a structured `informationExtractor` (7-field schema with explicit fallbacks for every field), then through a two-layer dedup (Graph message ID across executions + normalized event-name match against the existing Notion DB, with all six Unicode dash variants flattened to ASCII so en-dashes don't bypass dedup), then writes survivors into the Notion Events database that W5 reads from. Notifies `#marketing-events` on Slack and emails a confirmation back to internal senders (`@transformlabs.com`) only. *Two-stage LLM pipeline (cheap classifier → expensive extractor), two-layer dedup, Unicode dash normalization, workflow pairing with W5 via shared Notion state.*
+
 ---
 
 ## System view
@@ -66,6 +70,7 @@ flowchart LR
         CC["CryptoCompare<br/>news"]
         TW["Twitter API v2"]
         MEET["Meetup RSS"]
+        MX["Microsoft Graph<br/>(marketing inbox)"]
     end
 
     subgraph engines["n8n Workflows"]
@@ -78,6 +83,7 @@ flowchart LR
         W7["W7 - Thought Leadership<br/>insight + writer + critic loop<br/>+ quote-card render"]
         W8["W8 - Fractional CTO<br/>selector + outline + writer<br/>+ critique-edit loop"]
         W9["W9 - AI Theme Carousel<br/>theme + research + 8-slide writer<br/>+ critic-editor loop"]
+        W10["W10 - Inbox Event Ingester<br/>Graph poll + classifier + extractor<br/>+ two-layer dedup, feeds W5"]
     end
 
     subgraph memory["State"]
@@ -143,6 +149,10 @@ flowchart LR
     W9 <--> NOT
     W9 <--> BLOB
     W9 --> LA
+    S1 --> MX
+    MX --> W10
+    W10 --> NOT
+    W10 -. populates .-> W5
 ```
 
 Every other diagram in this repo is generated the same way — by walking the n8n JSON's `nodes` and `connections` keys.
@@ -167,6 +177,8 @@ The bullets below are the engineering choices that shaped the system. Each one i
 
 - **Theme-first authoring with rigid slide-role spine.** Workflow 9 picks a *theme* rather than a single article, then researches 5-6 mid-market industry examples to populate a fixed 8-slide spine (`hook → body × 5 → stat → cta`). Every body slide is required to lead with a specific metric (`Healthcare + 40% Faster Diagnoses`); the structure is the brand voice, which is what makes the publication recognizable week to week. Slides render via an Azure-hosted HTML template with URL-encoded params per slide type — different from W6's 600+ line inline render. Tradeoff: less per-slide visual variety, much simpler per-run code paths. *See [`docs/workflows/transform-labs-ai-transformation-carousel.md`](docs/workflows/transform-labs-ai-transformation-carousel.md#stage-4--write).*
 
+- **Two-stage LLM pipeline + paired-workflow composition through shared Notion state.** Workflow 10 polls the marketing inbox every 2 hours, runs a cheap Claude classifier (`is this a real event vs. an OTP, newsletter, receipt, or spam?`) to firewall out the ~95% of emails that aren't events, then runs an `informationExtractor` only on the survivors. Two layers of dedup — Graph message-ID across executions plus normalized event-name match against the Notion DB (with all six Unicode dash variants flattened to ASCII so en-dashes and em-dashes don't bypass the match). The new events land in the same Notion Events database that **W5** reads from — the two workflows are decoupled (different schedules, different code paths) but composed via shared state. *See [`docs/workflows/transform-labs-inbox-event-ingester.md`](docs/workflows/transform-labs-inbox-event-ingester.md#stage-7--notion-side-dedupe).*
+
 - **Multi-vendor LLM strategy.** Anthropic Claude Sonnet 4.5 for the W5 email strategist (less generic marketing copy on this prompt class), Azure OpenAI `gpt-5-mini` for W5 extraction and parsers, OpenAI `gpt-5.1` for W4's master coordinator, OpenAI `gpt-5-mini` for analysis-class agents, OpenAI `gpt-image-1` for LinkedIn images, OpenAI `text-embedding-3-small` for vector memory. Picked per task, not per vendor preference.
 
 - **Prompt engineering with structural differentiation.** Workflow 1 takes one news article and produces three voices — Microvest brand voice (analytical, ~200 chars, no first-person), Drippy (upbeat mascot, ~100 chars, high-school reading level), Droopy (cynical NY attitude, ~100 chars, hashtag-formula closer). Banned emoji set, banned punctuation set, and reading-level targets are enforced in-prompt across all three. *See [`docs/workflows/microvest-content-engine.md`](docs/workflows/microvest-content-engine.md).*
@@ -188,10 +200,10 @@ The bullets below are the engineering choices that shaped the system. Each one i
 | Layer | What I use here |
 |---|---|
 | **Orchestration** | n8n (cloud) — schedule / RSS / webhook / chat / eval triggers, AI agent / tool agent / structured output parser nodes, sub-workflow tool invocation, native evaluation framework |
-| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary, W7 hashtags); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise; W7 write / critic / edit; W8 select / outline / write / critique / edit; W9 write / critic / edit); Google Gemini 3 Pro (W6 topic selector + critic; W7 research; W9 theme + research); Google Gemini 3.1 Pro (W7 insight generator) |
-| **State + storage** | Supabase Postgres + pgvector (`conversation_memory`, `ai_knowledge_base`, `match_conversation_memory` RPC); Redis (`processed_tweet:*` dedup); Notion (Events DB, Content HQ approval workflow with platform-segmented entries); Azure Blob Storage (event images, carousel slide PNGs, thought-leadership + fractional-CTO quote cards) |
-| **External APIs** | LinkedIn Marketing API, Twitter/X API v2 (OAuth2 × 3 accounts + Bearer mention search), CoinGecko (3 endpoints), CryptoCompare News API, Telegram Bot API, Meetup RSS, AI-news RSS (TechCrunch / Wired / MIT Tech Review / Ars Technica / OhioX), corporate-and-enterprise RSS (HBR / MIT Sloan / McKinsey / Fortune / CIO.com), OpenAI (chat + image + embeddings), Anthropic, Google Gemini, SerpAPI, ScreenshotOne, Constant Contact (OAuth2), Slack (4 channels + slash commands) |
-| **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, outline-first writing, theme-first authoring, rigid slide-role spines, structured output parsing with autoFix, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, critic-reviser loops with bounded iteration, cross-vendor LLM judging, voice-impersonation quality gates, anti-AI-tells detection, anti-inflation scoring instructions, REJECT-by-default critics, format-aware writing (LinkedIn fold-physics encoding), HTML-to-PNG render pipelines (inline-generated and template-driven), Notion paragraph chunking, human-in-the-loop approval gates, multi-vendor LLM routing |
+| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary, W7 hashtags); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise; W7 write / critic / edit; W8 select / outline / write / critique / edit; W9 write / critic / edit; W10 classify + extract); Google Gemini 3 Pro (W6 topic selector + critic; W7 research; W9 theme + research); Google Gemini 3.1 Pro (W7 insight generator) |
+| **State + storage** | Supabase Postgres + pgvector (`conversation_memory`, `ai_knowledge_base`, `match_conversation_memory` RPC); Redis (`processed_tweet:*` dedup); Notion (Events DB shared between W10 writer and W5 reader, Content HQ approval workflow with platform-segmented entries); Azure Blob Storage (event images, carousel slide PNGs, thought-leadership + fractional-CTO quote cards) |
+| **External APIs** | LinkedIn Marketing API, Twitter/X API v2 (OAuth2 × 3 accounts + Bearer mention search), CoinGecko (3 endpoints), CryptoCompare News API, Telegram Bot API, Microsoft Graph (mail read + mail send on the marketing mailbox), Meetup RSS, AI-news RSS (TechCrunch / Wired / MIT Tech Review / Ars Technica / OhioX), corporate-and-enterprise RSS (HBR / MIT Sloan / McKinsey / Fortune / CIO.com), OpenAI (chat + image + embeddings), Anthropic, Google Gemini, SerpAPI, ScreenshotOne, Constant Contact (OAuth2), Slack (4 channels + slash commands) |
+| **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, outline-first writing, theme-first authoring, rigid slide-role spines, structured output parsing with autoFix, two-stage LLM pipelines (cheap classifier → expensive extractor), two-layer dedup (per-execution + per-domain), Unicode normalization for fuzzy match, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, critic-reviser loops with bounded iteration, cross-vendor LLM judging, voice-impersonation quality gates, anti-AI-tells detection, anti-inflation scoring instructions, REJECT-by-default critics, format-aware writing (LinkedIn fold-physics encoding), HTML-to-PNG render pipelines (inline-generated and template-driven), Notion paragraph chunking, paired-workflow composition through shared Notion state, human-in-the-loop approval gates, multi-vendor LLM routing |
 
 ---
 
