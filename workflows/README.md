@@ -17,6 +17,7 @@ This directory holds the raw n8n workflow JSONs. Each one is the source of recor
 | `transform-labs-ai-transformation-carousel.json` | [W9](../docs/workflows/transform-labs-ai-transformation-carousel.md) |
 | `transform-labs-inbox-event-ingester.json` | [W10](../docs/workflows/transform-labs-inbox-event-ingester.md) |
 | `transform-labs-event-followup-email-sender.json` | [W11](../docs/workflows/transform-labs-event-followup-email-sender.md) |
+| `transform-labs-x-thread-generator.json` | [W12](../docs/workflows/transform-labs-x-thread-generator.md) |
 
 ## Sanitization
 

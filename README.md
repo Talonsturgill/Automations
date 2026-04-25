@@ -54,6 +54,10 @@ Each workflow is a self-contained system with its own trigger surface, prompt de
 
 **Daily post-event follow-up email sender — completes the Events trio (W10 ingests, W5 promos before, W11 follows up after).** Pulls approved follow-up email drafts from Notion Content HQ (filter: `Platform=Email - Event Follow Up`, `Approved=true`, `Status=Not Published`, `Date to Publish <= now`), walks the relation chain (Content HQ → Event → Attendees) to fan out one item per attendee, validates each email with a regex filter, creates a fresh per-run timestamped Constant Contact list (so membership stays scoped to one send), upserts each attendee onto the list, builds personalized HTML with a Transform Labs logo header and a 5-icon social signature (`{{name}}` becomes the CC merge tag `[[FIRSTNAME OR "there"]]` for per-recipient substitution at send time), creates the campaign in CC's two-step model (`POST /v3/emails` then `PUT /v3/emails/activities/{id}` to attach the list), and dispatches via `/schedules` with immediate-send sentinel. Marks the Notion entry Published and pings `#marketing-emails`. *Notion-relation-driven attendee fan-out, per-run scoped CC list, three-workflow composition through shared Notion state.*
 
+### 12. [Transform Labs X Thread Generator](docs/workflows/transform-labs-x-thread-generator.md)
+
+**Tri-weekly X (Twitter) thread generator — sibling of W6 with the same RSS aggregation but a different output channel.** Aggregates the same five AI-news RSS feeds W6 uses, Gemini 3 Pro picks the best article for a multi-tweet breakdown, Claude Sonnet 4.5 + SerpAPI builds a *flexible-not-formulaic* outline (role + direction per tweet rather than a rigid script — `"Establish the stakes — why should a CTO care about this?"`), then writes 5-7 tweets under X's structural constraints (tweet 1 ends in `🧵` with no number prefix, tweets 2-6 start with `2/`, `3/`, etc., hashtags only on the final tweet, every tweet under 280 chars including URLs). The output runs through a Gemini 3 Flash critic (cheaper Flash variant for the more mechanical per-tweet pass-or-fail check) and a Claude Sonnet 4.5 reviser until score ≥9 or six iterations. Saves to Content HQ as `X (Thread) - Blog`, renders the thread inline as Notion paragraph blocks for review, and posts a `🧵 *New X Thread Ready for Review*` Slack notification to `#marketing-twitter-posts` with the full thread inline (after sanitizing the topic title's em/en dashes and colons that fight with Slack mrkdwn). Runs M/W/F at 9:15 AM ET. *Flexible outline as creative-output technique, cross-vendor judging with Flash for mechanical checks, format-aware critic, sibling-workflow composition with W6.*
+
 ---
 
 ## System view
@@ -89,6 +93,7 @@ flowchart LR
         W9["W9 - AI Theme Carousel<br/>theme + research + 8-slide writer<br/>+ critic-editor loop"]
         W10["W10 - Inbox Event Ingester<br/>Graph poll + classifier + extractor<br/>+ two-layer dedup, feeds W5"]
         W11["W11 - Event Follow-Up<br/>relation walk + per-run CC list<br/>+ two-step campaign send"]
+        W12["W12 - X Thread Generator<br/>flexible outline + 5-7 tweet writer<br/>+ Flash critic / Claude reviser loop"]
     end
 
     subgraph memory["State"]
@@ -109,6 +114,7 @@ flowchart LR
         LT["LinkedIn Post +<br/>Quote Card /<br/>Transform Labs"]
         LF["LinkedIn Long-Form +<br/>Quote Card /<br/>Transform Labs"]
         LA["LinkedIn AI Theme<br/>Carousel /<br/>Transform Labs"]
+        XTL["X Thread /<br/>Transform Labs"]
     end
 
     S1 --> WEB
@@ -161,6 +167,9 @@ flowchart LR
     S1 --> W11
     W11 <--> NOT
     W11 --> EM
+    RSS --> W12
+    W12 <--> NOT
+    W12 --> XTL
 ```
 
 Every other diagram in this repo is generated the same way — by walking the n8n JSON's `nodes` and `connections` keys.
@@ -189,6 +198,8 @@ The bullets below are the engineering choices that shaped the system. Each one i
 
 - **Notion-relation-driven attendee fan-out + per-run scoped CC list.** Workflow 11 closes the Events trio (W10 ingests → W5 promos before → W11 follows up after). The Content HQ entry references an Event by relation; the Event references its Attendees by relation; each Attendee record has a name + email. The workflow walks that relation chain rather than asking a human to paste a recipient list — whoever ran event check-in is the source of truth, by construction. Then it creates a *fresh per-run timestamped Constant Contact list* (rather than maintaining a single growing "all attendees" list) so membership semantics stay tied to one specific send. CC's two-step campaign model (`POST /v3/emails` to create + `PUT /v3/emails/activities/{id}` to attach the list) is encoded explicitly. *See [`docs/workflows/transform-labs-event-followup-email-sender.md`](docs/workflows/transform-labs-event-followup-email-sender.md#stage-2--get-the-event-and-merge-its-data).*
 
+- **Flexible-not-formulaic outline + cross-vendor judging at the cheap end.** Workflow 12 (X threads) gives the Writer a *role + direction* per tweet rather than a literal script (`"Establish the stakes — why should a CTO care about this?"`). The system prompt explicitly says *"Some stories need more context upfront. Some need evidence first. Let the topic dictate the structure."* — which is what keeps the weekly thread from reading like the same Mad Lib every time. And the critic uses **Gemini 3 Flash** (not Pro) because X-thread quality is more mechanical than carousel quality (per-tweet character limits + banned-phrase scans + structural rules) — Flash's cheaper cost outweighs the slightly worse semantic judgment. Right model for the right task. *See [`docs/workflows/transform-labs-x-thread-generator.md`](docs/workflows/transform-labs-x-thread-generator.md#stage-3--flexible-outline).*
+
 - **Multi-vendor LLM strategy.** Anthropic Claude Sonnet 4.5 for the W5 email strategist (less generic marketing copy on this prompt class), Azure OpenAI `gpt-5-mini` for W5 extraction and parsers, OpenAI `gpt-5.1` for W4's master coordinator, OpenAI `gpt-5-mini` for analysis-class agents, OpenAI `gpt-image-1` for LinkedIn images, OpenAI `text-embedding-3-small` for vector memory. Picked per task, not per vendor preference.
 
 - **Prompt engineering with structural differentiation.** Workflow 1 takes one news article and produces three voices — Microvest brand voice (analytical, ~200 chars, no first-person), Drippy (upbeat mascot, ~100 chars, high-school reading level), Droopy (cynical NY attitude, ~100 chars, hashtag-formula closer). Banned emoji set, banned punctuation set, and reading-level targets are enforced in-prompt across all three. *See [`docs/workflows/microvest-content-engine.md`](docs/workflows/microvest-content-engine.md).*
@@ -210,7 +221,7 @@ The bullets below are the engineering choices that shaped the system. Each one i
 | Layer | What I use here |
 |---|---|
 | **Orchestration** | n8n (cloud) — schedule / RSS / webhook / chat / eval triggers, AI agent / tool agent / structured output parser nodes, sub-workflow tool invocation, native evaluation framework |
-| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary, W7 hashtags); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise; W7 write / critic / edit; W8 select / outline / write / critique / edit; W9 write / critic / edit; W10 classify + extract); Google Gemini 3 Pro (W6 topic selector + critic; W7 research; W9 theme + research); Google Gemini 3.1 Pro (W7 insight generator) |
+| **Models** | OpenAI `gpt-5.1` (W4 master coordinator), `gpt-5-mini` (W1-3 analysis), `gpt-image-1` (LinkedIn images), `text-embedding-3-small` (vector memory); Azure OpenAI `gpt-5-mini` (W5 extraction, W6 auxiliary, W7 hashtags); Anthropic Claude Sonnet 4.5 (W5 email strategist; W6 research / distill / write / revise; W7 write / critic / edit; W8 select / outline / write / critique / edit; W9 write / critic / edit; W10 classify + extract; W12 outline / write / revise); Google Gemini 3 Pro (W6 topic selector + critic; W7 research; W9 theme + research; W12 topic selector); Google Gemini 3.1 Pro (W7 insight generator); Google Gemini 3 Flash (W12 critic — cheaper Flash for the more mechanical X-thread pass-or-fail check) |
 | **State + storage** | Supabase Postgres + pgvector (`conversation_memory`, `ai_knowledge_base`, `match_conversation_memory` RPC); Redis (`processed_tweet:*` dedup); Notion (Events DB shared across W10 writer + W5 reader + W11 reader, Attendees DB read by W11, Content HQ approval workflow with platform-segmented entries); Azure Blob Storage (event images, carousel slide PNGs, thought-leadership + fractional-CTO quote cards) |
 | **External APIs** | LinkedIn Marketing API, Twitter/X API v2 (OAuth2 × 3 accounts + Bearer mention search), CoinGecko (3 endpoints), CryptoCompare News API, Telegram Bot API, Microsoft Graph (mail read + mail send on the marketing mailbox), Meetup RSS, AI-news RSS (TechCrunch / Wired / MIT Tech Review / Ars Technica / OhioX), corporate-and-enterprise RSS (HBR / MIT Sloan / McKinsey / Fortune / CIO.com), OpenAI (chat + image + embeddings), Anthropic, Google Gemini, SerpAPI, ScreenshotOne, Constant Contact direct API (OAuth2 — `/v3/contact_lists`, `/v3/contacts/sign_up_form`, `/v3/emails`, `/v3/emails/activities/{id}`, `/tests`, `/schedules`), Slack (4 channels + slash commands) |
 | **Patterns** | Hierarchical agent / tool-agent topology, sub-workflow modularization, outline-first writing, theme-first authoring, rigid slide-role spines, structured output parsing with autoFix, two-stage LLM pipelines (cheap classifier → expensive extractor), two-layer dedup (per-execution + per-domain), Unicode normalization for fuzzy match, Notion-relation-driven fan-out, per-run scoped Constant Contact lists, vector retrieval + memory writeback, multi-source data fusion, defensive output parsing, native eval datasets + quantitative quality gates, critic-reviser loops with bounded iteration, cross-vendor LLM judging, voice-impersonation quality gates, anti-AI-tells detection, anti-inflation scoring instructions, REJECT-by-default critics, format-aware writing (LinkedIn fold-physics encoding), HTML-to-PNG render pipelines (inline-generated and template-driven), Notion paragraph chunking, three-workflow composition through shared Notion state, human-in-the-loop approval gates, multi-vendor LLM routing |
