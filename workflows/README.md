@@ -12,6 +12,7 @@ This directory holds the raw n8n workflow JSONs. Each one is the source of recor
 | `autonomous-ai-agent-system.json` | [W4](../docs/workflows/autonomous-ai-agent-system.md) |
 | `transform-labs-event-promo.json` | [W5](../docs/workflows/transform-labs-event-promo.md) |
 | `transform-labs-linkedin-carousel.json` | [W6](../docs/workflows/transform-labs-linkedin-carousel.md) |
+| `transform-labs-linkedin-thought-leadership.json` | [W7](../docs/workflows/transform-labs-linkedin-thought-leadership.md) |
 
 ## Sanitization
 
