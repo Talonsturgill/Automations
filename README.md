@@ -1,6 +1,6 @@
-# LinkedIn + Twitter Automations
+# Marketing & Content Automations
 
-A portfolio of workflows running real autonomous content systems across LinkedIn, three Twitter/X accounts, and a branded marketing email channel. Two AI personalities (`Drippy_io`, `Droopyy_io`) and one brand voice (`Microvest`) post on schedule, react to market data, and reply to mentions — without me touching anything. A separate event-promo pipeline turns Columbus AI Meetup events into approval-gated branded emails delivered through Constant Contact.
+A portfolio of twelve n8n workflows running real autonomous content systems for two brands: **Microvest** (a crypto / AI media account on LinkedIn + three X personalities + Telegram) and **Transform Labs** (a Columbus-based AI consultancy with a full LinkedIn publishing cadence + Constant Contact email + a Notion-backed events pipeline). The workflows handle news-driven posts, market-data-driven tweets, conversational mention replies with vector memory, multi-source RSS aggregation, LinkedIn carousels, LinkedIn long-form posts, LinkedIn thought-leadership posts, X threads, pre-event promo emails, post-event follow-up emails, and inbound event ingestion from a marketing inbox.
 
 This repo is the source of record. Every workflow JSON in [`workflows/`](workflows/) is the actual file imported into [`microvest.app.n8n.cloud`](https://microvest.app.n8n.cloud); every diagram in [`docs/`](docs/) is generated from those JSONs.
 
@@ -8,7 +8,7 @@ This repo is the source of record. Every workflow JSON in [`workflows/`](workflo
 
 ## Workflows
 
-Each workflow is a self-contained system with its own trigger surface, prompt design, and reliability posture. Together they cover the full content footprint — news-driven, market-driven, evergreen, conversational, and event-driven email.
+Each workflow is a self-contained system with its own trigger surface, prompt design, and reliability posture. Together they cover the full content footprint — news-driven, market-driven, evergreen, conversational, branded email, LinkedIn carousels and long-form, X threads, and event-pipeline ingestion / promo / follow-up.
 
 ### 1. [Microvest Content Engine](docs/workflows/microvest-content-engine.md)
 

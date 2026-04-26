@@ -1,8 +1,10 @@
 # Setup
 
-This is the reproduction guide. By the end of it you will have all four workflows imported, credentials wired up, and a smoke test that posts a single throwaway tweet from the test queue.
+> **Scope note:** this guide covers reproduction of the original four-workflow Microvest stack (W1-W4) end to end. The repo now contains twelve workflows; **W5-W12** (Transform Labs stack — events pipeline, LinkedIn carousels and long-form, X threads) live their own per-workflow setup notes inside their deep-dives at [`workflows/`](workflows/). The credential table and the smoke-test path below are W1-W4-specific. The "Additional services for W5-W12" section at the bottom enumerates the extra accounts you'll need to bring up the rest of the repo.
 
-## Prerequisites
+This is the reproduction guide. By the end of it you will have all four W1-W4 workflows imported, credentials wired up, and a smoke test that posts a single throwaway tweet from the test queue.
+
+## Prerequisites (W1-W4)
 
 - **n8n ≥ 1.50** (cloud or self-hosted). The AI agent / tool-agent / structured output parser nodes used here require modern n8n.
 - **OpenAI API key** with access to `gpt-5-mini`, `gpt-5.1`, `gpt-image-1`, and `text-embedding-3-small`.
@@ -12,6 +14,21 @@ This is the reproduction guide. By the end of it you will have all four workflow
 - **Redis** instance reachable from your n8n host (Workflow 4 only).
 - **CryptoCompare account** (free tier — Workflow 3) and **CoinGecko** (no auth — Workflow 2).
 - **Telegram bot** (optional — Workflow 3's dead path).
+
+## Additional services for W5-W12
+
+The Transform Labs stack adds these on top of the W1-W4 prereqs. See each workflow's deep-dive for which it actually uses.
+
+- **Anthropic API key** (Claude Sonnet 4.5) — used by W5, W6, W7, W8, W9, W10, W11, W12
+- **Google Gemini API key** (Gemini 3 Pro / 3.1 Pro / 3 Flash via the Generative Language API) — W6, W7, W9, W12
+- **Azure OpenAI subscription** (`gpt-5-mini` deployment) — W5, W6, W7
+- **SerpAPI key** — W6, W7, W9, W12 (web-search tool for the research-class agents)
+- **ScreenshotOne API key** — W6, W7, W8, W9 (HTML-to-PNG renders for slide carousels and quote cards)
+- **Azure Storage account + Blob container `blogheaderimages`** — W5, W6, W7, W8, W9 (image hosting)
+- **Notion workspace + integration token** with read/write on the **Events DB**, **Attendees DB**, and **Content HQ** databases — W5, W6, W7, W8, W9, W10, W11, W12
+- **Constant Contact OAuth2 app** with `contacts` + `campaigns` scopes — W5, W11
+- **Microsoft Graph OAuth2 app** with `Mail.Read` + `Mail.Send` on the marketing mailbox — W10
+- **Slack workspace + bot user** with channel-post scope on `#marketing-events`, `#marketing-emails`, `#marketing-linkedin-posts`, `#marketing-twitter-posts`, `#n8n-workflow-error` — W5, W6, W7, W8, W9, W10, W11, W12
 
 ## Account checklist
 
