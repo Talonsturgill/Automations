@@ -1,6 +1,8 @@
 # Architecture
 
-The four workflows in this repo share state, share personalities, and share a content pipeline philosophy, but each one solves a distinct problem. This document is the cross-cutting view: what runs where, what they have in common, and where the seams are.
+> **Scope note:** this document covers the original four-workflow Microvest stack (W1-W4) in depth. The repo now contains twelve workflows; the **complete system view** including the Transform Labs stack (W5-W12) lives in the top-level [`README.md`](../README.md#system-view) and the per-workflow deep-dives in [`docs/workflows/`](workflows/). This file is kept for the W1-W4 cross-cutting analysis (shared personalities, shared credentials, vector-memory seams) which doesn't have a natural home in either of those.
+
+The four Microvest workflows share state, share personalities, and share a content pipeline philosophy, but each one solves a distinct problem. This document is the cross-cutting view: what runs where, what they have in common, and where the seams are.
 
 ## System diagram
 
