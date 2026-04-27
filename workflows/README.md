@@ -22,6 +22,7 @@ This directory holds the raw n8n workflow JSONs. Each one is the source of recor
 | `transform-labs-case-study-brief-generator.json` | [W14](../docs/workflows/transform-labs-case-study-brief-generator.md) — sub-workflow |
 | `transform-labs-slack-modal-router.json` | [W15](../docs/workflows/transform-labs-slack-modal-router.md) |
 | `transform-labs-linkedin-analytics-sync.json` | [W16](../docs/workflows/transform-labs-linkedin-analytics-sync.md) |
+| `transform-labs-linkedin-comment-auto-reply.json` | [W17](../docs/workflows/transform-labs-linkedin-comment-auto-reply.md) |
 
 ## Sanitization
 
