@@ -119,6 +119,7 @@ flowchart LR
         W14["W14 - Case Study Brief Generator<br/>sub-workflow, 6 parallel specialists<br/>+ orchestrator with honesty markers"]
         W15["W15 - Slack Modal Router<br/>one Interactivity URL,<br/>callback_id dispatch + 3s ack"]
         W16["W16 - LinkedIn Analytics Sync<br/>daily 6 AM, batched socialMetadata<br/>+ writes reactions/comments to Notion"]
+        W17["W17 - LinkedIn Comment Auto-Reply<br/>hourly biz-hours, classify + route<br/>+ founder-voice critic loop"]
     end
 
     subgraph memory["State"]
