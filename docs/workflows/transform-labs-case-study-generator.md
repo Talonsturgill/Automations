@@ -74,3 +74,17 @@ flowchart TB
     classDef data fill:#374151,color:#fff,stroke:#9ca3af
     classDef out fill:#064e3b,color:#fff,stroke:#34d399
 ```
+
+## The Slack frontend
+
+Two webhook endpoints and one modal definition. The pattern is rigid because Slack's interactivity API is rigid:
+
+1. **`/casestudy` slash command → `Slash Command Webhook`.** Slack POSTs an `application/x-www-form-urlencoded` body with `trigger_id`, `user_id`, `channel_id`, `team_id`, `command`, and a `response_url`. `Parse Slash Command` decodes the body into JSON.
+2. **`Open Modal Form` immediately POSTs to `https://slack.com/api/views.open`** with the captured `trigger_id` and a full block-kit modal definition (workflow JSON textarea, project name, industry select with 9 options, three optional metric inputs, two optional context textareas). Slack's `trigger_id` is single-use and short-lived (~3 seconds), so this call has to happen before any heavy work.
+3. **`Acknowledge Slash Command` returns an empty 200** to close out the slash-command HTTP cycle. Same 3-second SLA pattern as W15 — ack first, do work second.
+4. The modal's `callback_id` is `casestudy_form`, the same callback the W15 router watches for.
+5. **`Modal Submit Webhook`** receives the form submission. The body is again `application/x-www-form-urlencoded` but the value of the `payload` field is itself URL-encoded JSON — the parser unwraps it before reading `view.state.values`. Each block + action ID combo gets pulled out into a `formData` object (e.g. `getValue('industry_block', 'industry')` returns the selected option's `value`).
+6. **`Acknowledge & Close Modal` returns `{response_action: "clear"}`** so Slack dismisses the modal immediately. Without this the user stares at a spinner.
+7. **`Notify Processing Started`** posts a DM to the submitter — *"Processing your workflow through our AI agent teams... This typically takes 5-7 minutes."* — so the marketer has explicit confirmation and a time expectation before the long-running work starts.
+
+The payload-parsing JS understands both shapes (`type === 'view_submission'` and the legacy direct-body shape) so the same handler works whether the router two-hops the payload or Slack hits the webhook directly.
