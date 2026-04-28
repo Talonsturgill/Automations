@@ -122,3 +122,15 @@ analysis.dataConfidence = {
 Every downstream prompt is given this structure verbatim. The brief orchestrator's prompt classifies inputs into the three buckets explicitly. The writer's prompt prints all three buckets into its context window and instructs *"USER-PROVIDED METRICS (use if not null) ... NEEDS PLACEHOLDER: {{ ...needsPlaceholder }}"*. The critic's system prompt is **"YOU ARE A HALLUCINATION DETECTOR"** with explicit rules: any specific dollar amount, percentage, or hour-saving claim that isn't in `userProvided` is `CRITICAL` severity. The editor's prompt orders priorities — *"FIX HALLUCINATIONS FIRST. Remove or mark as [ESTIMATED] any metrics not in `data_confidence.userProvided`"* — before any voice or em-dash work.
 
 Unverified claims survive in the document as `[ESTIMATED: X-Y hours/week — TO VERIFY]` markers. The editor's rules forbid filling those in; whoever opens the case study downstream sees them at a glance and knows what still needs verification before the doc goes out the door.
+
+## Notion writeback as two API calls
+
+The case-study body can run 1500 words; Notion paragraph blocks cap at 2000 characters each. So the writeback is intentionally split:
+
+1. **`Add to Case Study Library`** uses the standard n8n Notion node to create a `databasePage` row in `AI Case Study Library` with `Title`, `Generated Date`, `Type = n8n`, `Workflow Name (in n8n)`, and `Status = Needs Review`. This call returns a `pageId` and `url`.
+2. **`Prepare Blocks` (JS)** reads the editor's full case-study prose, splits it on paragraph breaks (`/\n\n+/`), and chunks each paragraph that exceeds 2000 chars into multiple paragraph blocks of ≤2000 chars. The output is a `{ pageId, blocks }` object where `blocks` is an array of `{ object: 'block', type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content } }] } }` items.
+3. **`Append Content`** is a raw HTTP `PATCH` to `https://api.notion.com/v1/blocks/{pageId}/children` (the n8n Notion node doesn't expose this endpoint cleanly) with the `Notion-Version: 2022-06-28` header and `{ "children": [...] }` as the body.
+
+Splitting the writeback this way keeps the title/metadata write atomic — if the body append fails, the row still exists with the title and `Needs Review` status, and a human can see what was generated.
+
+After the body is appended, two Slack notifications fan out from the same upstream node: a DM back to the submitter (so the marketer who ran `/casestudy` gets a personal ping with the Notion URL) and a public post in `#marketing-linkedin-posts` with the same content (so the team can see the queue without subscribing to everyone's DMs).
