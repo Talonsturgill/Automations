@@ -129,6 +129,7 @@ flowchart LR
         W16["W16 - LinkedIn Analytics Sync<br/>daily 6 AM, batched socialMetadata<br/>+ writes reactions/comments to Notion"]
         W17["W17 - LinkedIn Comment Auto-Reply<br/>hourly biz-hours, classify + route<br/>+ founder-voice critic loop"]
         W18["W18 - Daily AI Tweet Generator<br/>twin 7:49 AM/PM triggers, 10-feed RSS<br/>+ single-agent vs curator-then-writer<br/>+ native n8n eval framework"]
+        W19["W19 - Weekly Blog Topic Research<br/>Mondays @ 7 AM ET, 6-feed RSS<br/>+ Gemini 3 Pro topic ideation<br/>+ Notion AI Blog - Prompts queue"]
     end
 
     subgraph memory["State"]
@@ -222,6 +223,9 @@ flowchart LR
     RSS --> W18
     W18 <--> NOT
     W18 --> XTW
+    S1 --> W19
+    RSS --> W19
+    W19 --> NOT
 ```
 
 > W14 is a **sub-workflow** with no scheduled trigger of its own — a parent workflow that has already analyzed a target workflow's structure calls W14 via n8n's `executeWorkflowTrigger`. That's why it appears in the engines group without inflow/outflow edges in the diagram above.
