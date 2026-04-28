@@ -24,6 +24,7 @@ This directory holds the raw n8n workflow JSONs. Each one is the source of recor
 | `transform-labs-linkedin-analytics-sync.json` | [W16](../docs/workflows/transform-labs-linkedin-analytics-sync.md) |
 | `transform-labs-linkedin-comment-auto-reply.json` | [W17](../docs/workflows/transform-labs-linkedin-comment-auto-reply.md) |
 | `transform-labs-daily-ai-tweet-generator.json` | [W18](../docs/workflows/transform-labs-daily-ai-tweet-generator.md) |
+| `transform-labs-blog-topic-research.json` | [W19](../docs/workflows/transform-labs-blog-topic-research.md) |
 
 ## Sanitization
 
