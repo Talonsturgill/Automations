@@ -98,3 +98,27 @@ The agent pipeline is staged in two distinct passes that look similar at a glanc
 **Long-form pass (writer → critic → editor → quality gate).** `Write Full Case Study` is a Claude Sonnet 4.5 agent that takes the structured brief plus the workflow analysis plus the data-confidence buckets and produces a 800-1200 word **prose case study** with 8 named sections (Title / Executive Summary / The Challenge / The Discovery / The Solution / Results & Impact / Internal Perspective / Key Takeaways + About boilerplate). `Critique Case Study` is a **Gemini 3 Flash** agent — Flash because the critic's main job is mechanical (cross-check claimed metrics against the `userProvided` bucket, voice check, structural review). `Update Case Study` is a Claude Sonnet 4.5 editor that takes the critique and rewrites with a hard contract — *"Return ONLY valid JSON. No preamble. Must start with `{` and end with `}`"* — plus an explicit em-dash ban in its system prompt. `Quality Check` is an `IF` node on `overallScore ≥ 7.5`; below threshold loops back to the critic for another pass.
 
 The split is intentional. **Brief generation is a structuring task**; long-form writing is a **voice and verification task**. Different prompts, different output schemas, different models on the critic, and the brief is durable — if the long-form pass produces garbage, the brief in `$('Generate Case Study BRIEF3')` is still available as input for the editor's revision call. Same lesson as W6/W7/W8/W12 (writer + critic + editor + bounded loop), but with the specialists pattern (W14) feeding the brief instead of a single-agent ideation step.
+
+## The `dataConfidence` partition
+
+`Workflow Analyzer Agent4` is a JS code node, not an LLM. Given the pasted workflow JSON and the form metrics, it builds an `analysis` object that includes a strict three-way partition of every fact the downstream prompts will see:
+
+```js
+analysis.dataConfidence = {
+  verified: {        // Inferred deterministically from the JSON
+    nodeCount, aiNodeCount, integrations, patterns,
+    complexity, hasErrorHandling
+  },
+  userProvided: {    // Only what the operator typed into the modal
+    timeSaved, costSavings, errorReduction, otherMetrics,
+    challengeContext, quote
+  },
+  needsPlaceholder: [ // Everything else — names of fields that have no source
+    'time_saved', 'cost_savings', 'error_reduction', ...
+  ]
+};
+```
+
+Every downstream prompt is given this structure verbatim. The brief orchestrator's prompt classifies inputs into the three buckets explicitly. The writer's prompt prints all three buckets into its context window and instructs *"USER-PROVIDED METRICS (use if not null) ... NEEDS PLACEHOLDER: {{ ...needsPlaceholder }}"*. The critic's system prompt is **"YOU ARE A HALLUCINATION DETECTOR"** with explicit rules: any specific dollar amount, percentage, or hour-saving claim that isn't in `userProvided` is `CRITICAL` severity. The editor's prompt orders priorities — *"FIX HALLUCINATIONS FIRST. Remove or mark as [ESTIMATED] any metrics not in `data_confidence.userProvided`"* — before any voice or em-dash work.
+
+Unverified claims survive in the document as `[ESTIMATED: X-Y hours/week — TO VERIFY]` markers. The editor's rules forbid filling those in; whoever opens the case study downstream sees them at a glance and knows what still needs verification before the doc goes out the door.
