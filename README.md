@@ -2,7 +2,7 @@
 
 A portfolio of twenty+ workflows running real autonomous content systems for mutliple companies.
 
-This repo is the source of record. Every workflow JSON in [`workflows/`](workflows/) is the actual file imported; every diagram in [`docs/`](docs/) is generated from those JSONs.
+This repo is the source of record. Every workflow in [`workflows/`](workflows/) is the actual file imported; every diagram in [`docs/`](docs/) is generated from those.
 
 ---
 
