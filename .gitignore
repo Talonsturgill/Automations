@@ -18,6 +18,9 @@ secrets/
 *.swp
 Thumbs.db
 
+# Claude Code per-user settings (never commit)
+.claude/settings.local.json
+
 # Node (in case any tooling lands here)
 node_modules/
 npm-debug.log
