@@ -1,0 +1,7 @@
+out/
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+.env
+.claude/skills/alaska-ai-brief/fonts/

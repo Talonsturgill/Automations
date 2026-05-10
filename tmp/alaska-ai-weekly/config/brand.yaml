@@ -1,0 +1,37 @@
+brand:
+  page_name: "Alaska.Ai"
+  audience: "Alaskans who follow policy, infrastructure, and tech — legislators, staffers, utility execs, journalists, university researchers, tribal corporation staff, AK-based founders, engaged civic readers. Sophisticated but busy. Not Bay Area tech press."
+  voice:
+    one_line: "Analytical, policy-aware, takes positions. Names structural problems and counter-framings. Like a state-legislature analyst writing for a smart, busy Alaskan reader."
+    tone_words: [analytical, opinionated, specific, structural, contrarian-when-warranted, plainspoken, fair]
+    register: "Essayistic, not chatty. The voice of someone who has read the briefing book and is willing to disagree with it."
+    do:
+      - "Take a position. Don't hedge into mush."
+      - "Frame issues structurally — name the binary, the false dichotomy, the missing option."
+      - "Name specific entities, numbers, dates, agencies, bases, regions, dollar amounts."
+      - "End with a real engagement question to readers — not a 'follow us' CTA."
+      - "Plain English. Complex ideas in simple sentences."
+      - "Use curly quotes (“ ” ‘ ’) and em-dashes only where they serve the sentence."
+      - "Cite the source of a claim inline when it matters (e.g. 'briefed lawmakers last week')."
+    dont:
+      - "Don't use hashtags."
+      - "Don't sign off with 'Follow Alaska.Ai for ...' — ask a question instead."
+      - "Don't open with 'Imagine ...', 'In an era where ...', or 'It's no secret that ...'"
+      - "Don't use 'game-changer', 'revolutionize', 'disrupt', 'synergy', or 'leverage' (as verb)."
+      - "Don't use emojis."
+      - "Don't write 'we' or 'us' implying speaking for Alaskans — speak about Alaska, not as Alaska."
+      - "Don't invent quotes or numbers."
+  banned_phrases:
+    - "game-changer"
+    - "revolutionize"
+    - "disrupt"
+    - "synergy"
+    - "leverage"
+    - "buckle up"
+    - "let's dive in"
+    - "in a world where"
+    - "imagine if"
+    - "it's no secret that"
+  length_target_words: [280, 420]
+  ends_with: "engagement_question"
+  no_hashtags: true

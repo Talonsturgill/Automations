@@ -1,0 +1,39 @@
+seed_sources:
+  alaska_news:
+    - {url: "https://www.adn.com",                    outlet: "Anchorage Daily News",                  credibility: "high"}
+    - {url: "https://alaskapublic.org",               outlet: "Alaska Public Media",                   credibility: "high"}
+    - {url: "https://www.alaskabeacon.com",           outlet: "Alaska Beacon",                         credibility: "high"}
+    - {url: "https://www.ktoo.org",                   outlet: "KTOO Public Media",                     credibility: "high"}
+    - {url: "https://knba.org",                       outlet: "KNBA",                                  credibility: "high"}
+    - {url: "https://www.alaskasnewssource.com",      outlet: "KTUU",                                  credibility: "medium"}
+    - {url: "https://www.alaskajournal.com",          outlet: "Alaska Journal of Commerce",            credibility: "high"}
+    - {url: "https://www.akbizmag.com",               outlet: "Alaska Business",                       credibility: "high"}
+    - {url: "https://www.alaska-native-news.com",     outlet: "Alaska Native News",                    credibility: "medium"}
+
+  research_orgs:
+    - {url: "https://news.uaf.edu",                   outlet: "UAF News",                              credibility: "primary"}
+    - {url: "https://www.uaa.alaska.edu/news",        outlet: "UAA News",                              credibility: "primary"}
+    - {url: "https://www.iarc.uaf.edu",               outlet: "International Arctic Research Center",  credibility: "primary"}
+    - {url: "https://www.sealaskaheritage.org/news",  outlet: "Sealaska Heritage Institute",           credibility: "primary"}
+    - {url: "https://www.ansep.net/news",             outlet: "ANSEP",                                 credibility: "primary"}
+
+  government:
+    - {url: "https://www.alaska.gov/news.html",       outlet: "State of Alaska",                       credibility: "primary"}
+    - {url: "https://www.muni.org/Departments/Mayor", outlet: "Muni of Anchorage",                     credibility: "primary"}
+    - {url: "https://www.fairbanksalaska.us/news",    outlet: "City of Fairbanks",                     credibility: "primary"}
+
+  national_with_ak_lens:
+    - {url: "https://www.nytimes.com",                outlet: "NYT",                                   credibility: "high"}
+    - {url: "https://www.washingtonpost.com",         outlet: "WaPo",                                  credibility: "high"}
+    - {url: "https://www.reuters.com",                outlet: "Reuters",                               credibility: "high"}
+    - {url: "https://apnews.com",                     outlet: "AP",                                    credibility: "high"}
+    - {url: "https://www.bloomberg.com",              outlet: "Bloomberg",                             credibility: "high"}
+
+discover:
+  enabled: true
+  guidance: |
+    Surface credible sources not in this seed list, including newsletters,
+    blogs by AK-based academics, AK trade publications, and tribal corporation
+    newsrooms. Put candidates in researcher.new_sources_to_consider with a
+    one-line rationale. The maintainer promotes good ones into seed_sources
+    weekly.

@@ -1,0 +1,48 @@
+rubric:
+  ship_threshold: 8.0
+  max_revision_cycles: 2
+  criteria:
+    - name: "Hook strength"
+      weight: 0.15
+      descriptors:
+        10: "Concrete, specific, names a deadline / vote / deployment / live tension. Hints at a missing option."
+        7:  "Solid opener, no banned phrases, but a touch generic."
+        4:  "Generic / LinkedIn-y / abstract."
+        0:  "Banned opener or empty."
+    - name: "Local relevance"
+      weight: 0.20
+      descriptors:
+        10: "Every story has a clear, named AK angle (place, org, person, deployment)."
+        7:  "Most stories localize well; one feels imported."
+        4:  "Mostly national; AK angle is thin."
+    - name: "Factual density"
+      weight: 0.15
+      descriptors:
+        10: "Specifics (names, places, dates, numbers) every 1-2 sentences."
+        7:  "Specifics in lead, vaguer in supporting."
+        4:  "Mostly vibes; few named facts."
+    - name: "Source quality"
+      weight: 0.15
+      descriptors:
+        10: "Every claim ties to a primary source or two independent credible outlets."
+        7:  "All claims sourced; mix of credible secondary."
+        4:  "At least one claim is single-sourced and not primary."
+    - name: "Voice match"
+      weight: 0.15
+      descriptors:
+        10: "Reads like examples/post_001.md. Analytical, position-taking, structural."
+        7:  "Mostly on-voice; one drift moment."
+        4:  "Drifts into folksy, tech-blog, or LinkedIn voice."
+    - name: "Readability (mobile)"
+      weight: 0.10
+      descriptors:
+        10: "Tight paragraphs, easy to scan on phone, 280-420 words body."
+        7:  "Slightly long or one wall-of-text paragraph."
+        4:  "Hard to scan."
+    - name: "Engagement question"
+      weight: 0.10
+      descriptors:
+        10: "Closes with a real, debatable question to readers tied to a specific tension in the post. No 'follow us'."
+        7:  "Question is present and on-topic but slightly generic."
+        4:  "Generic prompt or a 'follow us' sign-off."
+        0:  "No closing question, or replaced with hashtags / CTA."
